@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   Alert,
   FlatList,
@@ -12,10 +12,10 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import type { StackNavigationProp } from '@react-navigation/stack';
 import LinearGradient from 'react-native-linear-gradient';
-
-const LOCATIONS_STORAGE_KEY = '@FishermansTracker/locations';
-const PROFILE_STORAGE_KEY = '@FishermansTracker/profile';
+import { StackList } from '../TrackerNavigation/FishermansStackRoutes';
+import { LOCATIONS_STORAGE_KEY, PROFILE_STORAGE_KEY } from '../fishermansUtils';
 
 export type CatchItem = {
   id: string;
@@ -37,20 +37,13 @@ export type LocationItem = {
   totalSessionSeconds?: number;
 };
 
-function formatLocationDate(date: Date): string {
-  return date.toLocaleDateString('en-GB', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
-}
-
 const FishermansTrackerLocations: React.FC = () => {
-  const navigation = useNavigation();
+  const navigation =
+    useNavigation<StackNavigationProp<StackList, 'FishermansTabsRoutes'>>();
   const [locations, setLocations] = useState<LocationItem[]>([]);
   const [profileNickname, setProfileNickname] = useState<string | null>(null);
 
-  const loadProfile = useCallback(async () => {
+  const loadProfile = async () => {
     try {
       const raw = await AsyncStorage.getItem(PROFILE_STORAGE_KEY);
       if (raw) {
@@ -59,53 +52,47 @@ const FishermansTrackerLocations: React.FC = () => {
           typeof parsed?.nickname === 'string' ? parsed.nickname : null,
         );
       }
-    } catch {
+    } catch (err) {
+      if (__DEV__) {
+        console.warn('FishermansTrackerLocations: loadProfile failed', err);
+      }
       setProfileNickname(null);
     }
-  }, []);
+  };
 
-  const loadLocations = useCallback(async () => {
+  const loadLocations = async () => {
     try {
       const raw = await AsyncStorage.getItem(LOCATIONS_STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw) as LocationItem[];
         setLocations(Array.isArray(parsed) ? parsed : []);
       }
-    } catch {
+    } catch (err) {
+      if (__DEV__) {
+        console.warn('FishermansTrackerLocations: loadLocations failed', err);
+      }
       setLocations([]);
     }
-  }, []);
-
-  useEffect(() => {
-    loadLocations();
-    loadProfile();
-  }, [loadLocations, loadProfile]);
+  };
 
   useFocusEffect(
     useCallback(() => {
       loadLocations();
       loadProfile();
-    }, [loadLocations, loadProfile]),
+    }, []),
   );
 
-  const openMap = useCallback(() => {
-    (navigation as { navigate: (s: string) => void }).navigate(
-      'FishermansTrackerMap',
-    );
-  }, [navigation]);
+  const openMap = () => {
+    navigation.navigate('FishermansTrackerMap');
+  };
 
-  const openDetail = useCallback(
-    (item: LocationItem) => {
-      (
-        navigation as {
-          navigate: (s: string, p: { locationId: string }) => void;
-        }
-      ).navigate('FishermansTrackerLocationDetail', { locationId: item.id });
-    },
-    [navigation],
-  );
+  const openDetail = (item: LocationItem) => {
+    navigation.navigate('FishermansTrackerLocationDetail', {
+      locationId: item.id,
+    });
+  };
 
-  const confirmDelete = useCallback((item: LocationItem) => {
+  const confirmDelete = (item: LocationItem) => {
     Alert.alert(
       'Delete This Spot?',
       'This location will be permanently removed from your map. Any notes linked to this spot will also be detached.',
@@ -120,62 +107,62 @@ const FishermansTrackerLocations: React.FC = () => {
               AsyncStorage.setItem(
                 LOCATIONS_STORAGE_KEY,
                 JSON.stringify(next),
-              ).catch(() => {});
+              ).catch(err => {
+                if (__DEV__) {
+                  console.warn(
+                    'FishermansTrackerLocations: saveLocations failed',
+                    err,
+                  );
+                }
+              });
               return next;
             });
           },
         },
       ],
     );
-  }, []);
+  };
 
-  const renderLocationCard = useCallback(
-    ({ item }: { item: LocationItem }) => (
-      <TouchableOpacity
-        style={styles.locationCard}
-        activeOpacity={0.9}
-        onPress={() => openDetail(item)}
-        onLongPress={() => confirmDelete(item)}
-      >
-        <View style={styles.locationCardIcon}>
-          <Image
-            source={require('../FishermansTrackerAssets/images/anchor.png')}
-          />
-        </View>
-        <View style={styles.locationCardBody}>
-          <Text style={styles.locationCardTitle} numberOfLines={1}>
-            {item.title}
-          </Text>
-          <Text style={styles.locationCardDate}>{item.date}</Text>
-        </View>
-      </TouchableOpacity>
-    ),
-    [openDetail, confirmDelete],
+  const renderLocationCard = ({ item }: { item: LocationItem }) => (
+    <TouchableOpacity
+      style={styles.locationCard}
+      activeOpacity={0.9}
+      onPress={() => openDetail(item)}
+      onLongPress={() => confirmDelete(item)}
+    >
+      <View style={styles.locationCardIcon}>
+        <Image
+          source={require('../FishermansTrackerAssets/images/anchor.png')}
+        />
+      </View>
+      <View style={styles.locationCardBody}>
+        <Text style={styles.locationCardTitle} numberOfLines={1}>
+          {item.title}
+        </Text>
+        <Text style={styles.locationCardDate}>{item.date}</Text>
+      </View>
+    </TouchableOpacity>
   );
 
   return (
     <ImageBackground
       source={require('../FishermansTrackerAssets/images/mainbg.png')}
-      style={styles.container}
+      style={styles.fshCnt}
     >
       <ScrollView
         contentContainerStyle={{ flexGrow: 1 }}
         showsVerticalScrollIndicator={false}
         bounces={false}
       >
-        <View style={styles.headerContainer}>
+        <View style={styles.headerFshCnt}>
           <Image
             source={require('../FishermansTrackerAssets/images/header.png')}
-            style={styles.header}
+            style={styles.headerFsh}
           />
           <TouchableOpacity
             style={styles.profileButton}
             activeOpacity={0.8}
-            onPress={() =>
-              (navigation as { navigate: (s: string) => void }).navigate(
-                'FishermansTrackerProfile',
-              )
-            }
+            onPress={() => navigation.navigate('FishermansTrackerProfile')}
           >
             <Image
               source={require('../FishermansTrackerAssets/images/settings.png')}
@@ -225,14 +212,14 @@ const FishermansTrackerLocations: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
+  fshCnt: {
     flex: 1,
   },
-  headerContainer: {
+  headerFshCnt: {
     width: '100%',
     marginBottom: 8,
   },
-  header: {
+  headerFsh: {
     width: '100%',
     height: 156,
     borderBottomLeftRadius: 30,
@@ -293,12 +280,6 @@ const styles = StyleSheet.create({
   listContent: {
     paddingBottom: 20,
   },
-  emptyText: {
-    fontSize: 16,
-    color: '#5A8F7A',
-    textAlign: 'center',
-    marginTop: 24,
-  },
   locationCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -314,9 +295,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
-  },
-  locationCardIconText: {
-    fontSize: 24,
   },
   locationCardBody: {
     flex: 1,

@@ -1,15 +1,15 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Image, StyleSheet, View } from 'react-native';
-import FishermansTrackerHome from '../FishermansTrackerScreens/FishermansTrackerHome';
-import FishermansTrackerLocations from '../FishermansTrackerScreens/FishermansTrackerLocations';
-import FishermansTrackerNotes from '../FishermansTrackerScreens/FishermansTrackerNotes';
-import FishermansTrackerRecipes from '../FishermansTrackerScreens/FishermansTrackerRecipes';
+import FishermansTrackerHome from '../BuddyTrackerScreens/FishermansTrackerHome';
+import FishermansTrackerLocations from '../BuddyTrackerScreens/FishermansTrackerLocations';
+import FishermansTrackerNotes from '../BuddyTrackerScreens/FishermansTrackerNotes';
+import FishermansTrackerRecipes from '../BuddyTrackerScreens/FishermansTrackerRecipes';
 
-const Tab = createBottomTabNavigator();
+const BottomTab = createBottomTabNavigator();
 
 const FishermansTabsRoutes = () => {
   return (
-    <Tab.Navigator
+    <BottomTab.Navigator
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: true,
@@ -19,7 +19,7 @@ const FishermansTabsRoutes = () => {
         tabBarLabelStyle: styles.tabBarLabel,
       }}
     >
-      <Tab.Screen
+      <BottomTab.Screen
         name="FishermansTrackerHome"
         component={FishermansTrackerHome}
         options={{
@@ -32,7 +32,7 @@ const FishermansTabsRoutes = () => {
           ),
         }}
       />
-      <Tab.Screen
+      <BottomTab.Screen
         name="FishermansTrackerLocations"
         component={FishermansTrackerLocations}
         options={{
@@ -45,7 +45,7 @@ const FishermansTabsRoutes = () => {
           ),
         }}
       />
-      <Tab.Screen
+      <BottomTab.Screen
         name="FishermansTrackerNotes"
         component={FishermansTrackerNotes}
         options={{
@@ -58,7 +58,7 @@ const FishermansTabsRoutes = () => {
           ),
         }}
       />
-      <Tab.Screen
+      <BottomTab.Screen
         name="FishermansTrackerRecipes"
         component={FishermansTrackerRecipes}
         options={{
@@ -71,7 +71,7 @@ const FishermansTabsRoutes = () => {
           ),
         }}
       />
-    </Tab.Navigator>
+    </BottomTab.Navigator>
   );
 };
 

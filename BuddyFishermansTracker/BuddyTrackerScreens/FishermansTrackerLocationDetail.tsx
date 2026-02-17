@@ -1,50 +1,35 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useFocusEffect, useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import {
+  useFocusEffect,
+  useNavigation,
+  useRoute,
+  RouteProp,
+} from '@react-navigation/native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Alert,
   Image,
   ImageBackground,
-  Modal,
   ScrollView,
   Share,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
-import { launchImageLibrary } from 'react-native-image-picker';
 import type { StackNavigationProp } from '@react-navigation/stack';
-import { StackList } from '../FishermansTrackerNavigation/FishermansStackRoutes';
+import { StackList } from '../TrackerNavigation/FishermansStackRoutes';
 import LinearGradient from 'react-native-linear-gradient';
-import type { CatchItem, LocationItem } from './FishermansTrackerLocations';
-
-const LOCATIONS_STORAGE_KEY = '@FishermansTracker/locations';
-const PROFILE_STORAGE_KEY = '@FishermansTracker/profile';
+import type { LocationItem } from './FishermansTrackerLocations';
+import {
+  LOCATIONS_STORAGE_KEY,
+  PROFILE_STORAGE_KEY,
+  formatSessionTime,
+  totalWeightKg,
+} from '../fishermansUtils';
 
 type DetailRoute = RouteProp<StackList, 'FishermansTrackerLocationDetail'>;
-
-function formatTimer(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-}
-
-function formatSessionTime(seconds: number): string {
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  const s = seconds % 60;
-  return `${String(h).padStart(2, '0')} : ${String(m).padStart(
-    2,
-    '0',
-  )} : ${String(s).padStart(2, '0')}`;
-}
-
-function totalWeightKg(catches: CatchItem[]): number {
-  return catches.reduce((sum, c) => sum + (parseFloat(c.weight) || 0), 0);
-}
 
 const FishermansTrackerLocationDetail: React.FC = () => {
   const navigation =
@@ -58,16 +43,9 @@ const FishermansTrackerLocationDetail: React.FC = () => {
   const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
   const [timerSeconds, setTimerSeconds] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const [catchModalVisible, setCatchModalVisible] = useState(false);
-  const [catchTitle, setCatchTitle] = useState('');
-  const [catchSpecies, setCatchSpecies] = useState('');
-  const [catchWeight, setCatchWeight] = useState('');
-  const [catchWeather, setCatchWeather] = useState('');
-  const [catchEquipment, setCatchEquipment] = useState('');
-  const [catchImageUri, setCatchImageUri] = useState<string | null>(null);
   const [weightUnit, setWeightUnit] = useState<'kg' | 'lb'>('kg');
 
-  const loadProfileUnit = useCallback(async () => {
+  const loadProfileUnit = async () => {
     try {
       const raw = await AsyncStorage.getItem(PROFILE_STORAGE_KEY);
       if (raw) {
@@ -76,18 +54,18 @@ const FishermansTrackerLocationDetail: React.FC = () => {
       } else {
         setWeightUnit('kg');
       }
-    } catch {
+    } catch (err) {
+      if (__DEV__) {
+        console.warn(
+          'FishermansTrackerLocationDetail: loadProfileUnit failed',
+          err,
+        );
+      }
       setWeightUnit('kg');
     }
-  }, []);
+  };
 
-  useFocusEffect(
-    useCallback(() => {
-      loadProfileUnit();
-    }, [loadProfileUnit]),
-  );
-
-  const loadLocation = useCallback(async () => {
+  const loadLocation = async () => {
     try {
       const raw = await AsyncStorage.getItem(LOCATIONS_STORAGE_KEY);
       if (raw) {
@@ -95,14 +73,23 @@ const FishermansTrackerLocationDetail: React.FC = () => {
         const found = list.find(l => l.id === locationId);
         setLocation(found ?? null);
       }
-    } catch {
+    } catch (err) {
+      if (__DEV__) {
+        console.warn(
+          'FishermansTrackerLocationDetail: loadLocation failed',
+          err,
+        );
+      }
       setLocation(null);
     }
-  }, [locationId]);
+  };
 
-  useEffect(() => {
-    loadLocation();
-  }, [loadLocation]);
+  useFocusEffect(
+    useCallback(() => {
+      loadProfileUnit();
+      loadLocation();
+    }, [locationId]),
+  );
 
   useEffect(() => {
     if (isSessionActive && sessionStartTime !== null) {
@@ -118,39 +105,24 @@ const FishermansTrackerLocationDetail: React.FC = () => {
     };
   }, [isSessionActive, sessionStartTime]);
 
-  const saveLocation = useCallback(async (updated: LocationItem) => {
+  const saveLocation = async (updated: LocationItem) => {
     setLocation(updated);
     try {
       const raw = await AsyncStorage.getItem(LOCATIONS_STORAGE_KEY);
       const list = raw ? (JSON.parse(raw) as LocationItem[]) : [];
       const next = list.map(l => (l.id === updated.id ? updated : l));
       await AsyncStorage.setItem(LOCATIONS_STORAGE_KEY, JSON.stringify(next));
-    } catch (_) {}
-  }, []);
-
-  const handleStartFishing = useCallback(() => {
-    setSessionActive(true);
-    setSessionStartTime(Date.now());
-    setTimerSeconds(0);
-  }, []);
-
-  const handleEndFishing = useCallback(() => {
-    if (!location) return;
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
+    } catch (err) {
+      if (__DEV__) {
+        console.warn(
+          'FishermansTrackerLocationDetail: saveLocation failed',
+          err,
+        );
+      }
     }
-    const totalSeconds = timerSeconds;
-    setSessionActive(false);
-    setSessionStartTime(null);
-    setTimerSeconds(0);
-    saveLocation({
-      ...location,
-      totalSessionSeconds: (location.totalSessionSeconds ?? 0) + totalSeconds,
-    });
-  }, [location, timerSeconds, saveLocation]);
+  };
 
-  const handleBack = useCallback(() => {
+  const handleBack = () => {
     if (isSessionActive) {
       Alert.alert(
         'End Fishing Session?',
@@ -167,69 +139,17 @@ const FishermansTrackerLocationDetail: React.FC = () => {
     } else {
       navigation.goBack();
     }
-  }, [isSessionActive, navigation]);
+  };
 
-  const openCatchModal = useCallback(() => {
-    setCatchTitle('');
-    setCatchSpecies('');
-    setCatchWeight('');
-    setCatchWeather('');
-    setCatchEquipment('');
-    setCatchImageUri(null);
-    setCatchModalVisible(true);
-  }, []);
-
-  const closeCatchModal = useCallback(() => setCatchModalVisible(false), []);
-
-  const handlePickCatchImage = useCallback(() => {
-    launchImageLibrary(
-      { mediaType: 'photo', includeBase64: false },
-      response => {
-        if (response.didCancel) return;
-        const uri = response.assets?.[0]?.uri ?? null;
-        if (uri) setCatchImageUri(uri);
-      },
-    );
-  }, []);
-
-  const handleSaveCatch = useCallback(() => {
-    if (!location) return;
-    const newCatch: CatchItem = {
-      id: Date.now().toString(),
-      title: catchTitle.trim() || 'Catch',
-      species: catchSpecies.trim(),
-      weight: catchWeight.trim(),
-      weatherConditions: catchWeather.trim(),
-      equipment: catchEquipment.trim(),
-      imageUri: catchImageUri,
-    };
-    const catches = location.catches ?? [];
-    saveLocation({
-      ...location,
-      catches: [newCatch, ...catches],
-    });
-    closeCatchModal();
-  }, [
-    location,
-    catchTitle,
-    catchSpecies,
-    catchWeight,
-    catchWeather,
-    catchEquipment,
-    catchImageUri,
-    saveLocation,
-    closeCatchModal,
-  ]);
-
-  const handleShare = useCallback(() => {
+  const handleShare = () => {
     if (!location) return;
     const message = `${location.title}\n${location.date}\nhttps://www.google.com/maps?q=${location.latitude},${location.longitude}`;
     Share.share({ message, title: location.title });
-  }, [location]);
+  };
 
   if (!location) {
     return (
-      <View style={styles.centered}>
+      <View style={styles.centeredBox}>
         <Text style={styles.loadingText}>Loading...</Text>
       </View>
     );
@@ -238,7 +158,7 @@ const FishermansTrackerLocationDetail: React.FC = () => {
   return (
     <ImageBackground
       source={require('../FishermansTrackerAssets/images/mainbg.png')}
-      style={styles.container}
+      style={styles.fshCnt}
     >
       <ScrollView
         style={styles.scroll}
@@ -246,20 +166,20 @@ const FishermansTrackerLocationDetail: React.FC = () => {
         showsVerticalScrollIndicator={false}
         bounces={false}
       >
-        <View style={styles.headerContainer}>
+        <View style={styles.headerFshCnt}>
           <Image
             source={require('../FishermansTrackerAssets/images/header.png')}
-            style={styles.header}
+            style={styles.headerFsh}
           />
           <TouchableOpacity
-            style={styles.backButton}
+            style={styles.backButtn}
             onPress={handleBack}
             activeOpacity={0.8}
           >
             <Image
               source={require('../FishermansTrackerAssets/images/backArrow.png')}
             />
-            <Text style={styles.backButtonText}>Back</Text>
+            <Text style={styles.backButtnTxt}>Back</Text>
           </TouchableOpacity>
           <Image
             source={require('../FishermansTrackerAssets/images/headerImg.png')}
@@ -296,7 +216,8 @@ const FishermansTrackerLocationDetail: React.FC = () => {
                   <View style={styles.summaryBar}>
                     <Text style={styles.summaryBarText}>
                       Kilograms of fish:{' '}
-                      {totalWeightKg(location.catches).toFixed(1)} {weightUnit === 'lb' ? 'lb' : 'kg'}
+                      {totalWeightKg(location.catches).toFixed(1)}{' '}
+                      {weightUnit === 'lb' ? 'lb' : 'kg'}
                     </Text>
                   </View>
                 )}
@@ -337,7 +258,11 @@ const FishermansTrackerLocationDetail: React.FC = () => {
                         </View>
                         <View style={styles.catchCardWeightBadge}>
                           <Text style={styles.catchCardWeightText}>
-                            {c.weight ? `${c.weight} ${weightUnit === 'lb' ? 'Lb' : 'Kg'}` : '—'}
+                            {c.weight
+                              ? `${c.weight} ${
+                                  weightUnit === 'lb' ? 'Lb' : 'Kg'
+                                }`
+                              : '—'}
                           </Text>
                         </View>
                       </View>
@@ -397,10 +322,10 @@ const FishermansTrackerLocationDetail: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
+  fshCnt: {
     flex: 1,
   },
-  centered: {
+  centeredBox: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
@@ -410,11 +335,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#fff',
   },
-  headerContainer: {
+  headerFshCnt: {
     width: '100%',
     marginBottom: 0,
   },
-  header: {
+  headerFsh: {
     width: '100%',
     height: 150,
     borderBottomLeftRadius: 30,
@@ -425,7 +350,7 @@ const styles = StyleSheet.create({
     right: 20,
     bottom: -10,
   },
-  backButton: {
+  backButtn: {
     position: 'absolute',
     left: 15,
     top: 50,
@@ -439,12 +364,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  backButtonText: {
+  backButtnTxt: {
     fontSize: 16,
     fontWeight: '600',
     color: '#fff',
   },
-  timerWrap: {
+  timerWrp: {
     marginHorizontal: 20,
     marginTop: -24,
     marginBottom: 8,

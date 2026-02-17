@@ -8,7 +8,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import type { StackNavigationProp } from '@react-navigation/stack';
-import { StackList } from '../FishermansTrackerNavigation/FishermansStackRoutes';
+import { StackList } from '../TrackerNavigation/FishermansStackRoutes';
 
 const FishermansTrackerLoader: React.FC = () => {
   const navigation =

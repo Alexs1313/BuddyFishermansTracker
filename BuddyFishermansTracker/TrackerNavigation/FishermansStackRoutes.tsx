@@ -1,60 +1,67 @@
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
-import FishermansTrackerCreateProfile from '../FishermansTrackerScreens/FishermansTrackerCreateProfile';
-import FishermansTrackerLocationDetail from '../FishermansTrackerScreens/FishermansTrackerLocationDetail';
-import FishermansTrackerLoader from '../FishermansTrackerScreens/FishermansTrackerLoader';
-import FishermansTrackerMap from '../FishermansTrackerScreens/FishermansTrackerMap';
-import FishermansTrackerOnboard from '../FishermansTrackerScreens/FishermansTrackerOnboard';
-import FishermansTrackerProfile from '../FishermansTrackerScreens/FishermansTrackerProfile';
+import FishermansTrackerCreateProfile from '../BuddyTrackerScreens/FishermansTrackerCreateProfile';
+import FishermansTrackerLocationDetail from '../BuddyTrackerScreens/FishermansTrackerLocationDetail';
+import FishermansTrackerLoader from '../BuddyTrackerScreens/FishermansTrackerLoader';
+import FishermansTrackerMap from '../BuddyTrackerScreens/FishermansTrackerMap';
+import FishermansTrackerOnboard from '../BuddyTrackerScreens/FishermansTrackerOnboard';
+import FishermansTrackerProfile from '../BuddyTrackerScreens/FishermansTrackerProfile';
 import FishermansTabsRoutes from './FishermansTabsRoutes';
+
+export type TabParamList = {
+  FishermansTrackerHome: undefined;
+  FishermansTrackerLocations: undefined;
+  FishermansTrackerNotes: undefined;
+  FishermansTrackerRecipes: undefined;
+};
 
 export type StackList = {
   FishermansTrackerLoader: undefined;
   FishermansTrackerOnboard: undefined;
   FishermansTrackerCreateProfile: undefined;
-  FishermansTabsRoutes: undefined;
+  FishermansTabsRoutes: { screen?: keyof TabParamList } | undefined;
   FishermansTrackerProfile: undefined;
   FishermansTrackerLocationDetail: { locationId: string };
   FishermansTrackerMap: undefined;
 };
 
-const Stack = createStackNavigator<StackList>();
+const NativeStack = createStackNavigator<StackList>();
 
 const FishermansStackRoutes: React.FC = () => {
   return (
-    <Stack.Navigator
+    <NativeStack.Navigator
       screenOptions={{ headerShown: false }}
       initialRouteName="FishermansTrackerLoader"
     >
-      <Stack.Screen
+      <NativeStack.Screen
         name="FishermansTrackerLoader"
         component={FishermansTrackerLoader}
       />
-      <Stack.Screen
+      <NativeStack.Screen
         name="FishermansTrackerOnboard"
         component={FishermansTrackerOnboard}
       />
-      <Stack.Screen
+      <NativeStack.Screen
         name="FishermansTrackerCreateProfile"
         component={FishermansTrackerCreateProfile}
       />
-      <Stack.Screen
+      <NativeStack.Screen
         name="FishermansTabsRoutes"
         component={FishermansTabsRoutes}
       />
-      <Stack.Screen
+      <NativeStack.Screen
         name="FishermansTrackerProfile"
         component={FishermansTrackerProfile}
       />
-      <Stack.Screen
+      <NativeStack.Screen
         name="FishermansTrackerLocationDetail"
         component={FishermansTrackerLocationDetail}
       />
-      <Stack.Screen
+      <NativeStack.Screen
         name="FishermansTrackerMap"
         component={FishermansTrackerMap}
       />
-    </Stack.Navigator>
+    </NativeStack.Navigator>
   );
 };
 

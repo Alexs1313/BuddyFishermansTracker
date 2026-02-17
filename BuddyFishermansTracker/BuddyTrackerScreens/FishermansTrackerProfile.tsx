@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Alert,
   Image,
@@ -13,14 +13,22 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Linking,
 } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import type { StackNavigationProp } from '@react-navigation/stack';
-import { StackList } from '../FishermansTrackerNavigation/FishermansStackRoutes';
+import { StackList } from '../TrackerNavigation/FishermansStackRoutes';
 import LinearGradient from 'react-native-linear-gradient';
-
-const PROFILE_STORAGE_KEY = '@FishermansTracker/profile';
-const NOTIFICATIONS_KEY = '@FishermansTracker/notifications';
+import { useStorage } from '../FishermansStore/fishermansContxt';
+import Toast from 'react-native-toast-message';
+import {
+  PROFILE_STORAGE_KEY,
+  NOTIFICATIONS_KEY,
+  NOTES_STORAGE_KEY,
+  SAVED_RECIPES_KEY,
+  LOCATIONS_STORAGE_KEY,
+  MAP_DRAFT_KEY,
+} from '../fishermansUtils';
 
 type ProfileData = {
   nickname: string;
@@ -35,7 +43,28 @@ const FishermansTrackerProfile: React.FC = () => {
   const [unit, setUnit] = useState<'kg' | 'lb'>('kg');
   const [avatarUri, setAvatarUri] = useState<string | null>(null);
   const [initialData, setInitialData] = useState<ProfileData | null>(null);
-  const [notifications, setNotifications] = useState(true);
+  const { isEnabledNotifications, setIsEnabledNotifications } = useStorage();
+
+  const toggleBadenNotifications = async (value: boolean) => {
+    Toast.show({
+      type: 'success',
+      text1: `Notifications ${value ? 'enabled' : 'disabled'}`,
+      position: 'top',
+      visibilityTime: 2000,
+    });
+
+    try {
+      await AsyncStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(value));
+      setIsEnabledNotifications(value);
+    } catch (err) {
+      if (__DEV__) {
+        console.warn(
+          'FishermansTrackerProfile: toggleBadenNotifications failed',
+          err,
+        );
+      }
+    }
+  };
 
   const hasChanges = Boolean(
     initialData &&
@@ -45,7 +74,7 @@ const FishermansTrackerProfile: React.FC = () => {
         avatarUri !== initialData.avatarUri),
   );
 
-  const loadProfile = useCallback(async () => {
+  const loadProfile = async () => {
     try {
       const raw = await AsyncStorage.getItem(PROFILE_STORAGE_KEY);
       if (raw) {
@@ -65,21 +94,22 @@ const FishermansTrackerProfile: React.FC = () => {
         setAvatarUri(null);
         setInitialData({ nickname: '', unit: 'kg', avatarUri: null });
       }
-      const notifRaw = await AsyncStorage.getItem(NOTIFICATIONS_KEY);
-      setNotifications(notifRaw !== 'false');
-    } catch {
+    } catch (err) {
+      if (__DEV__) {
+        console.warn('FishermansTrackerProfile: loadProfile failed', err);
+      }
       setNickname('');
       setUnit('kg');
       setAvatarUri(null);
       setInitialData({ nickname: '', unit: 'kg', avatarUri: null });
     }
-  }, []);
+  };
 
   useEffect(() => {
     loadProfile();
-  }, [loadProfile]);
+  }, []);
 
-  const handlePickImage = useCallback(() => {
+  const handlePickImage = () => {
     launchImageLibrary(
       { mediaType: 'photo', includeBase64: false },
       response => {
@@ -95,9 +125,9 @@ const FishermansTrackerProfile: React.FC = () => {
         if (uri) setAvatarUri(uri);
       },
     );
-  }, []);
+  };
 
-  const handleSave = useCallback(async () => {
+  const handleSave = async () => {
     try {
       await AsyncStorage.setItem(
         PROFILE_STORAGE_KEY,
@@ -108,28 +138,23 @@ const FishermansTrackerProfile: React.FC = () => {
         }),
       );
       navigation.goBack();
-    } catch (_) {}
-  }, [nickname, unit, avatarUri, navigation]);
+    } catch (err) {
+      if (__DEV__) {
+        console.warn('FishermansTrackerProfile: handleSave failed', err);
+      }
+    }
+  };
 
-  const handleNotificationsChange = useCallback(async (value: boolean) => {
-    setNotifications(value);
-    try {
-      await AsyncStorage.setItem(NOTIFICATIONS_KEY, value ? 'true' : 'false');
-    } catch (_) {}
-  }, []);
+  const handleShareApp = () => {
+    Linking.openURL(
+      'https://apps.apple.com/us/app/the-fisherman-buddy-tracker/id6759281802',
+    );
+  };
 
-  const handleShareApp = useCallback(() => {
-    Share.share({
-      message:
-        'Check out Buddy Fishermans Tracker – log trips, save spots, recipes!',
-      title: 'Buddy Fishermans Tracker',
-    });
-  }, []);
-
-  const handleResetData = useCallback(() => {
+  const handleResetData = () => {
     Alert.alert(
       'Reset All Data?',
-      'This will clear your profile, notes, and saved recipes. This cannot be undone.',
+      'This will permanently delete all trips, catches, saved spots, notes, and statistics. Your profile will be kept. This action cannot be undone.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -138,18 +163,25 @@ const FishermansTrackerProfile: React.FC = () => {
           onPress: async () => {
             try {
               await AsyncStorage.multiRemove([
-                PROFILE_STORAGE_KEY,
                 NOTIFICATIONS_KEY,
-                '@FishermansTracker/notes',
-                '@FishermansTracker/savedRecipes',
+                NOTES_STORAGE_KEY,
+                SAVED_RECIPES_KEY,
+                LOCATIONS_STORAGE_KEY,
+                MAP_DRAFT_KEY,
               ]);
-              navigation.navigate('FishermansTrackerOnboard');
-            } catch (_) {}
+            } catch (err) {
+              if (__DEV__) {
+                console.warn(
+                  'FishermansTrackerProfile: handleResetData failed',
+                  err,
+                );
+              }
+            }
           },
         },
       ],
     );
-  }, [navigation]);
+  };
 
   return (
     <ImageBackground
@@ -282,8 +314,8 @@ const FishermansTrackerProfile: React.FC = () => {
             <View style={styles.settingsRow}>
               <Text style={styles.settingsRowText}>Notifications</Text>
               <Switch
-                value={notifications}
-                onValueChange={handleNotificationsChange}
+                value={isEnabledNotifications}
+                onValueChange={value => toggleBadenNotifications(value)}
                 trackColor={{ false: '#ccc', true: '#FF9F29' }}
                 thumbColor="#fff"
               />
@@ -311,6 +343,11 @@ const FishermansTrackerProfile: React.FC = () => {
             <TouchableOpacity
               style={[styles.settingsRow, { justifyContent: 'center' }]}
               activeOpacity={0.8}
+              onPress={() =>
+                Linking.openURL(
+                  'https://www.termsfeed.com/live/72f3fddd-07b9-4f5f-8318-60f63e1c3d2b',
+                )
+              }
             >
               <Text style={[styles.settingsRowText]}>Terms of Use</Text>
             </TouchableOpacity>
@@ -479,11 +516,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
     color: '#fff',
-  },
-  settingsRowIcon: {
-    fontSize: 20,
-    color: '#FF9F29',
-    fontWeight: '700',
   },
   settingsContainer: {
     width: '100%',

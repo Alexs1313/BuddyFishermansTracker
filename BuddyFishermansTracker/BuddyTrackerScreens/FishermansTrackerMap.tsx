@@ -15,15 +15,21 @@ import {
 import MapView, { Marker } from 'react-native-maps';
 import { launchImageLibrary } from 'react-native-image-picker';
 import type { StackNavigationProp } from '@react-navigation/stack';
-import { StackList } from '../FishermansTrackerNavigation/FishermansStackRoutes';
+import { StackList } from '../TrackerNavigation/FishermansStackRoutes';
 import LinearGradient from 'react-native-linear-gradient';
 import type { CatchItem, LocationItem } from './FishermansTrackerLocations';
 import { BlurView } from '@react-native-community/blur';
 import { useFocusEffect } from '@react-navigation/native';
-
-const LOCATIONS_STORAGE_KEY = '@FishermansTracker/locations';
-const PROFILE_STORAGE_KEY = '@FishermansTracker/profile';
-const MAP_DRAFT_KEY = '@FishermansTracker/mapDraft';
+import Toast from 'react-native-toast-message';
+import { useStorage } from '../FishermansStore/fishermansContxt';
+import Orientation from 'react-native-orientation-locker';
+import {
+  LOCATIONS_STORAGE_KEY,
+  PROFILE_STORAGE_KEY,
+  MAP_DRAFT_KEY,
+  formatDate,
+  formatTimer,
+} from '../fishermansUtils';
 
 type MapDraft = {
   title: string;
@@ -40,20 +46,6 @@ const DEFAULT_REGION = {
   latitudeDelta: 0.1,
   longitudeDelta: 0.1,
 };
-
-function formatLocationDate(date: Date): string {
-  return date.toLocaleDateString('en-GB', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
-}
-
-function formatTimer(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-}
 
 const MAX_CATCHES_PER_SESSION = 2;
 
@@ -78,8 +70,9 @@ const FishermansTrackerMap: React.FC = () => {
   const [timerSeconds, setTimerSeconds] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [weightUnit, setWeightUnit] = useState<'kg' | 'lb'>('kg');
+  const { isEnabledNotifications } = useStorage();
 
-  const loadProfileUnit = useCallback(async () => {
+  const loadProfileUnit = async () => {
     try {
       const raw = await AsyncStorage.getItem(PROFILE_STORAGE_KEY);
       if (raw) {
@@ -88,15 +81,20 @@ const FishermansTrackerMap: React.FC = () => {
       } else {
         setWeightUnit('kg');
       }
-    } catch {
+    } catch (err) {
+      if (__DEV__) {
+        console.warn('FishermansTrackerMap: loadProfileUnit failed', err);
+      }
       setWeightUnit('kg');
     }
-  }, []);
+  };
 
   useFocusEffect(
     useCallback(() => {
       loadProfileUnit();
-    }, [loadProfileUnit]),
+      Orientation.lockToPortrait();
+      return () => Orientation.unlockAllOrientations();
+    }, []),
   );
 
   useEffect(() => {
@@ -113,28 +111,32 @@ const FishermansTrackerMap: React.FC = () => {
     };
   }, [isSessionActive, sessionStartTime]);
 
-  const handleStartFishing = useCallback(() => {
+  const handleStartFishing = () => {
     setSessionActive(true);
     setSessionStartTime(Date.now());
     setTimerSeconds(0);
     setPendingCatches([]);
-  }, []);
+  };
 
-  const handleEndFishing = useCallback(async () => {
+  const handleEndFishing = async () => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
     try {
       await AsyncStorage.removeItem(MAP_DRAFT_KEY);
-    } catch (_) {}
+    } catch (err) {
+      if (__DEV__) {
+        console.warn('FishermansTrackerMap: handleEndFishing failed', err);
+      }
+    }
     setSessionActive(false);
     setSessionStartTime(null);
     setTimerSeconds(0);
     setPendingCatches([]);
-  }, [navigation]);
+  };
 
-  const openCatchModal = useCallback(() => {
+  const openCatchModal = () => {
     setCatchTitle('');
     setCatchSpecies('');
     setCatchWeight('');
@@ -142,11 +144,11 @@ const FishermansTrackerMap: React.FC = () => {
     setCatchEquipment('');
     setCatchImageUri(null);
     setCatchModalVisible(true);
-  }, []);
+  };
 
-  const closeCatchModal = useCallback(() => setCatchModalVisible(false), []);
+  const closeCatchModal = () => setCatchModalVisible(false);
 
-  const handlePickCatchImage = useCallback(() => {
+  const handlePickCatchImage = () => {
     launchImageLibrary(
       { mediaType: 'photo', includeBase64: false },
       response => {
@@ -155,9 +157,9 @@ const FishermansTrackerMap: React.FC = () => {
         if (uri) setCatchImageUri(uri);
       },
     );
-  }, []);
+  };
 
-  const handleSaveCatch = useCallback(async () => {
+  const handleSaveCatch = async () => {
     const newCatch: CatchItem = {
       id: Date.now().toString(),
       title: catchTitle.trim() || 'Catch',
@@ -199,12 +201,18 @@ const FishermansTrackerMap: React.FC = () => {
             LOCATIONS_STORAGE_KEY,
             JSON.stringify(list),
           );
+          Toast.show({
+            type: 'success',
+            text1: 'Successfully saved',
+            position: 'top',
+            visibilityTime: 2000,
+          });
         }
       } else {
         const newLocation: LocationItem = {
           id: Date.now().toString(),
           title: locationTitle,
-          date: formatLocationDate(new Date()),
+          date: formatDate(new Date()),
           latitude: pin.latitude,
           longitude: pin.longitude,
           catches: nextCatches.length > 0 ? nextCatches : undefined,
@@ -223,6 +231,12 @@ const FishermansTrackerMap: React.FC = () => {
             sessionLocationId: newLocation.id,
           } as MapDraft),
         );
+        Toast.show({
+          type: 'success',
+          text1: 'Successfully saved',
+          position: 'top',
+          visibilityTime: 2000,
+        });
         return;
       }
 
@@ -237,20 +251,18 @@ const FishermansTrackerMap: React.FC = () => {
           sessionLocationId,
         } as MapDraft),
       );
-    } catch (_) {}
-  }, [
-    catchTitle,
-    catchSpecies,
-    catchWeight,
-    catchWeather,
-    catchEquipment,
-    catchImageUri,
-    pendingCatches,
-    sessionStartTime,
-    title,
-    pin,
-    closeCatchModal,
-  ]);
+      Toast.show({
+        type: 'success',
+        text1: 'Successfully saved',
+        position: 'top',
+        visibilityTime: 2000,
+      });
+    } catch (err) {
+      if (__DEV__) {
+        console.warn('FishermansTrackerMap: handleSaveCatch failed', err);
+      }
+    }
+  };
 
   const canAddCatch =
     isSessionActive && pendingCatches.length < MAX_CATCHES_PER_SESSION;

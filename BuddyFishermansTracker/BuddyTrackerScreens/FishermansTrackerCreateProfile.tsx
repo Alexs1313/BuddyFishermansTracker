@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
-import React, { useCallback, useState } from 'react';
+import React, { useState } from 'react';
 import {
   Alert,
   Image,
@@ -14,8 +14,9 @@ import {
 } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import type { StackNavigationProp } from '@react-navigation/stack';
-import { StackList } from '../FishermansTrackerNavigation/FishermansStackRoutes';
+import { StackList } from '../TrackerNavigation/FishermansStackRoutes';
 import LinearGradient from 'react-native-linear-gradient';
+import { PROFILE_STORAGE_KEY } from '../fishermansUtils';
 
 const FishermansTrackerCreateProfile: React.FC = () => {
   const [nickname, setNickname] = useState('');
@@ -28,7 +29,7 @@ const FishermansTrackerCreateProfile: React.FC = () => {
 
   const isFormValid = nickname.trim().length > 0 && avatarUri !== null;
 
-  const handlePickImage = useCallback(() => {
+  const handlePickImage = () => {
     launchImageLibrary(
       {
         mediaType: 'photo',
@@ -37,32 +38,29 @@ const FishermansTrackerCreateProfile: React.FC = () => {
       response => {
         if (response.didCancel) return;
         if (response.errorCode) {
-          Alert.alert(
-            'Ошибка',
-            response.errorMessage ?? 'Не удалось выбрать фото',
-          );
+          Alert.alert('error', response.errorMessage ?? 'failed');
           return;
         }
         const uri = response.assets?.[0]?.uri ?? null;
         if (uri) setAvatarUri(uri);
       },
     );
-  }, []);
+  };
 
-  const handleCreate = useCallback(async () => {
+  const handleCreate = async () => {
     if (!isFormValid) return;
     try {
       await AsyncStorage.setItem(
-        '@FishermansTracker/profile',
+        PROFILE_STORAGE_KEY,
         JSON.stringify({ nickname: nickname.trim(), unit, avatarUri }),
       );
     } catch (_) {}
     navigation.navigate('FishermansTabsRoutes');
-  }, [navigation, isFormValid, nickname, unit, avatarUri]);
+  };
 
-  const handleSkip = useCallback(() => {
+  const handleSkip = () => {
     navigation.navigate('FishermansTabsRoutes');
-  }, [navigation]);
+  };
 
   return (
     <ImageBackground
@@ -74,8 +72,8 @@ const FishermansTrackerCreateProfile: React.FC = () => {
         showsVerticalScrollIndicator={false}
         bounces={false}
       >
-        <View style={styles.container}>
-          <View style={styles.headerContainer}>
+        <View style={styles.fshCnt}>
+          <View style={styles.headerFshCnt}>
             <Image
               source={require('../FishermansTrackerAssets/images/header.png')}
               style={styles.header}
@@ -86,18 +84,18 @@ const FishermansTrackerCreateProfile: React.FC = () => {
             />
           </View>
 
-          <View style={styles.card}>
-            <Text style={styles.title}>Create profile</Text>
+          <View style={styles.profileCard}>
+            <Text style={styles.headTtl}>Create profile</Text>
 
             <TouchableOpacity
-              style={styles.avatarPlaceholder}
+              style={styles.phPlaceholder}
               activeOpacity={0.8}
               onPress={handlePickImage}
             >
               {avatarUri ? (
                 <Image
                   source={{ uri: avatarUri }}
-                  style={styles.avatarImage}
+                  style={styles.avatarImg}
                   resizeMode="cover"
                 />
               ) : (
@@ -108,7 +106,7 @@ const FishermansTrackerCreateProfile: React.FC = () => {
             </TouchableOpacity>
 
             <TextInput
-              style={styles.input}
+              style={styles.nicknameInput}
               placeholder="Nickname"
               placeholderTextColor="#FFFFFFB2"
               value={nickname}
@@ -116,32 +114,38 @@ const FishermansTrackerCreateProfile: React.FC = () => {
               onChangeText={setNickname}
             />
 
-            <View style={styles.unitRow}>
+            <View style={styles.unitWrr}>
               <TouchableOpacity
                 style={[
-                  styles.unitOption,
-                  unit === 'kg' && styles.unitOptionActive,
+                  styles.unitOptn,
+                  unit === 'kg' && styles.unitOptnActive,
                 ]}
                 onPress={() => setUnit('kg')}
                 activeOpacity={0.8}
               >
                 <View
-                  style={[styles.radio, unit === 'kg' && styles.radioActive]}
+                  style={[
+                    styles.radioButtn,
+                    unit === 'kg' && styles.radioActive,
+                  ]}
                 />
-                <Text style={styles.unitLabel}>Kg (Kilograms)</Text>
+                <Text style={styles.unitLabelTxt}>Kg (Kilograms)</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[
-                  styles.unitOption,
-                  unit === 'lb' && styles.unitOptionActive,
+                  styles.unitOptn,
+                  unit === 'lb' && styles.unitOptnActive,
                 ]}
                 onPress={() => setUnit('lb')}
                 activeOpacity={0.8}
               >
                 <View
-                  style={[styles.radio, unit === 'lb' && styles.radioActive]}
+                  style={[
+                    styles.radioButtn,
+                    unit === 'lb' && styles.radioActive,
+                  ]}
                 />
-                <Text style={styles.unitLabel}>Lb (Pounds)</Text>
+                <Text style={styles.unitLabelTxt}>Lb (Pounds)</Text>
               </TouchableOpacity>
             </View>
 
@@ -159,11 +163,11 @@ const FishermansTrackerCreateProfile: React.FC = () => {
                 }
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
-                style={[styles.button, !isFormValid && styles.buttonDisabled]}
+                style={[styles.profbtn, !isFormValid && styles.buttonDisabled]}
               >
                 <Text
                   style={[
-                    styles.buttonText,
+                    styles.profbtnTxt,
                     !isFormValid && styles.buttonTextDisabled,
                   ]}
                 >
@@ -187,12 +191,12 @@ const FishermansTrackerCreateProfile: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
+  fshCnt: {
     flex: 1,
     alignItems: 'center',
     paddingBottom: 20,
   },
-  card: {
+  profileCard: {
     width: '90%',
     backgroundColor: '#286E42',
     borderRadius: 30,
@@ -206,7 +210,7 @@ const styles = StyleSheet.create({
     right: 20,
     bottom: -10,
   },
-  headerContainer: {
+  headerFshCnt: {
     width: '100%',
     marginBottom: 36,
   },
@@ -216,13 +220,13 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
   },
-  title: {
+  headTtl: {
     fontSize: 24,
     fontWeight: '700',
     color: '#fff',
     marginBottom: 20,
   },
-  avatarPlaceholder: {
+  phPlaceholder: {
     width: 142,
     height: 142,
     borderRadius: 70,
@@ -232,11 +236,11 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     marginBottom: 30,
   },
-  avatarImage: {
+  avatarImg: {
     width: '100%',
     height: '100%',
   },
-  input: {
+  nicknameInput: {
     width: '100%',
     paddingVertical: 16,
     backgroundColor: '#799930',
@@ -246,12 +250,12 @@ const styles = StyleSheet.create({
     color: '#fff',
     marginBottom: 16,
   },
-  unitRow: {
+  unitWrr: {
     flexDirection: 'row',
     gap: 12,
     marginBottom: 24,
   },
-  unitOption: {
+  unitOptn: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
@@ -260,9 +264,9 @@ const styles = StyleSheet.create({
     padding: 12,
     gap: 8,
   },
-  unitOptionActive: {},
+  unitOptnActive: {},
 
-  radio: {
+  radioButtn: {
     width: 20,
     height: 20,
     borderRadius: 10,
@@ -273,8 +277,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#FF9F29',
     borderColor: '#fff',
   },
-  unitLabel: {
-    fontSize: 14,
+  unitLabelTxt: {
+    fontSize: 13,
     color: '#fff',
     fontWeight: '500',
   },
@@ -282,14 +286,14 @@ const styles = StyleSheet.create({
     width: '100%',
     marginBottom: 12,
   },
-  button: {
+  profbtn: {
     width: '100%',
     height: 51,
     borderRadius: 60,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  buttonText: {
+  profbtnTxt: {
     fontSize: 16,
     fontWeight: '500',
     color: '#007083',

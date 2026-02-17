@@ -1,6 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
+import type { StackNavigationProp } from '@react-navigation/stack';
+import Toast from 'react-native-toast-message';
 import {
   FlatList,
   Image,
@@ -14,9 +16,12 @@ import {
   View,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-
-const PROFILE_STORAGE_KEY = '@FishermansTracker/profile';
-const SAVED_RECIPES_KEY = '@FishermansTracker/savedRecipes';
+import { StackList } from '../TrackerNavigation/FishermansStackRoutes';
+import {
+  PROFILE_STORAGE_KEY,
+  SAVED_RECIPES_KEY,
+  formatRecipeSteps,
+} from '../fishermansUtils';
 
 export type RecipeItem = {
   id: string;
@@ -252,12 +257,13 @@ Open carefully and serve.`,
 ];
 
 const FishermansTrackerRecipes: React.FC = () => {
-  const navigation = useNavigation();
+  const navigation =
+    useNavigation<StackNavigationProp<StackList, 'FishermansTabsRoutes'>>();
   const [profileNickname, setProfileNickname] = useState<string | null>(null);
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const [detailRecipe, setDetailRecipe] = useState<RecipeItem | null>(null);
 
-  const loadProfile = useCallback(async () => {
+  const getSvdProfile = async () => {
     try {
       const raw = await AsyncStorage.getItem(PROFILE_STORAGE_KEY);
       if (raw) {
@@ -266,56 +272,69 @@ const FishermansTrackerRecipes: React.FC = () => {
           typeof parsed?.nickname === 'string' ? parsed.nickname : null,
         );
       }
-    } catch {
+    } catch (err) {
+      if (__DEV__) {
+        console.warn('FishermansTrackerRecipes: getSvdProfile failed', err);
+      }
       setProfileNickname(null);
     }
-  }, []);
+  };
 
-  const loadSavedRecipes = useCallback(async () => {
+  const loadSavedRecipes = async () => {
     try {
       const raw = await AsyncStorage.getItem(SAVED_RECIPES_KEY);
       if (raw) {
         const arr = JSON.parse(raw) as string[];
         setSavedIds(new Set(Array.isArray(arr) ? arr : []));
       }
-    } catch {
+    } catch (err) {
+      if (__DEV__) {
+        console.warn('FishermansTrackerRecipes: loadSavedRecipes failed', err);
+      }
       setSavedIds(new Set());
     }
-  }, []);
-
-  useEffect(() => {
-    loadProfile();
-    loadSavedRecipes();
-  }, [loadProfile, loadSavedRecipes]);
+  };
 
   useFocusEffect(
     useCallback(() => {
-      loadProfile();
-    }, [loadProfile]),
+      getSvdProfile();
+      loadSavedRecipes();
+    }, []),
   );
 
-  const toggleSaved = useCallback(async (id: string) => {
+  const toggleSavedRecipe = (id: string) => {
     setSavedIds(prev => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
+      const wasSaved = next.has(id);
+      if (wasSaved) next.delete(id);
       else next.add(id);
-      AsyncStorage.setItem(
-        SAVED_RECIPES_KEY,
-        JSON.stringify(Array.from(next)),
-      ).catch(() => {});
+      AsyncStorage.setItem(SAVED_RECIPES_KEY, JSON.stringify(Array.from(next)))
+        .then(() => {
+          Toast.show({
+            type: 'success',
+            text1: wasSaved ? 'Removed from saved!' : 'Recipe saved!',
+            position: 'top',
+            visibilityTime: 2000,
+          });
+        })
+        .catch(err => {
+          if (__DEV__) {
+            console.warn('FishermansTrackerRecipes: saveRecipes failed', err);
+          }
+        });
       return next;
     });
-  }, []);
+  };
 
-  const openDetail = useCallback((recipe: RecipeItem) => {
+  const openDetail = (recipe: RecipeItem) => {
     setDetailRecipe(recipe);
-  }, []);
+  };
 
-  const closeDetail = useCallback(() => {
+  const closeDetail = () => {
     setDetailRecipe(null);
-  }, []);
+  };
 
-  const shareRecipe = useCallback((recipe: RecipeItem) => {
+  const shareRecipe = (recipe: RecipeItem) => {
     const message = [
       recipe.title,
       `Servings: ${recipe.servings}  Approx. Time: ${recipe.time} minutes`,
@@ -325,40 +344,41 @@ const FishermansTrackerRecipes: React.FC = () => {
       recipe.steps,
     ].join('\n\n');
     Share.share({ message, title: recipe.title });
-  }, []);
+  };
 
-  const renderRecipeCard = useCallback(
-    ({ item }: { item: RecipeItem }) => {
+  const renderRecipeCard = ({ item }: { item: RecipeItem }) => {
       const saved = savedIds.has(item.id);
       return (
         <TouchableOpacity
-          style={styles.recipeCard}
+          style={styles.buddyTrckrRecipeCard}
           activeOpacity={0.9}
           onPress={() => openDetail(item)}
         >
-          <View style={styles.recipeCardLeft}>
+          <View style={styles.buddyTrckrRecipeCardLeft}>
             <Image
               source={require('../FishermansTrackerAssets/images/recipes.png')}
             />
           </View>
-          <View style={styles.recipeCardBody}>
-            <Text style={styles.recipeCardTitle} numberOfLines={2}>
+          <View style={styles.buddyTrckrRecipeCardBody}>
+            <Text style={styles.buddyTrckrRecipeCardTitle} numberOfLines={2}>
               {item.title}
             </Text>
-            <View style={styles.recipeTags}>
-              <View style={styles.recipeTag}>
-                <Text style={styles.recipeTagText}>
+            <View style={styles.buddyTrckrRecipeTags}>
+              <View style={styles.buddyTrckrRecipeTag}>
+                <Text style={styles.buddyTrckrRecipeTagText}>
                   Servings: {item.servings}
                 </Text>
               </View>
-              <View style={styles.recipeTag}>
-                <Text style={styles.recipeTagText}>Time: ~{item.time} min</Text>
+              <View style={styles.buddyTrckrRecipeTag}>
+                <Text style={styles.buddyTrckrRecipeTagText}>
+                  Time: ~{item.time} min
+                </Text>
               </View>
             </View>
           </View>
           <TouchableOpacity
-            style={styles.bookmarkButton}
-            onPress={() => toggleSaved(item.id)}
+            style={styles.buddyTrckrBookmarkButton}
+            onPress={() => toggleSavedRecipe(item.id)}
             activeOpacity={0.8}
           >
             {saved ? (
@@ -373,56 +393,50 @@ const FishermansTrackerRecipes: React.FC = () => {
           </TouchableOpacity>
         </TouchableOpacity>
       );
-    },
-    [savedIds, toggleSaved, openDetail],
-  );
+  };
 
   return (
     <ImageBackground
       source={require('../FishermansTrackerAssets/images/mainbg.png')}
-      style={styles.container}
+      style={styles.buddyTrckrContainer}
     >
       <ScrollView
         contentContainerStyle={{ flexGrow: 1 }}
         showsVerticalScrollIndicator={false}
         bounces={false}
       >
-        <View style={styles.headerContainer}>
+        <View style={styles.buddyTrckrHeaderContainer}>
           <Image
             source={require('../FishermansTrackerAssets/images/header.png')}
-            style={styles.header}
+            style={styles.buddyTrckrHeader}
           />
           <TouchableOpacity
-            style={styles.profileButton}
+            style={styles.buddyTrckrProfileButton}
             activeOpacity={0.8}
-            onPress={() =>
-              (navigation as { navigate: (s: string) => void }).navigate(
-                'FishermansTrackerProfile',
-              )
-            }
+            onPress={() => navigation.navigate('FishermansTrackerProfile')}
           >
             <Image
               source={require('../FishermansTrackerAssets/images/settings.png')}
             />
-            <Text style={styles.profileButtonText}>
+            <Text style={styles.buddyTrckrProfileButtonText}>
               Hi, {profileNickname || 'there'}!
             </Text>
           </TouchableOpacity>
           <Image
             source={require('../FishermansTrackerAssets/images/headerImg.png')}
-            style={styles.headerImg}
+            style={styles.buddyTrckrHeaderImg}
           />
         </View>
 
-        <View style={styles.content}>
-          <Text style={styles.screenTitle}>Cook Your Catch</Text>
+        <View style={styles.buddyTrckrContent}>
+          <Text style={styles.buddyTrckrScreenTitle}>Cook Your Catch</Text>
 
           <FlatList
             data={RECIPES_DATA}
             renderItem={renderRecipeCard}
             scrollEnabled={false}
             keyExtractor={item => item.id}
-            contentContainerStyle={styles.listContent}
+            contentContainerStyle={styles.buddyTrckrListContent}
             showsVerticalScrollIndicator={false}
           />
         </View>
@@ -435,104 +449,109 @@ const FishermansTrackerRecipes: React.FC = () => {
           {detailRecipe && (
             <ImageBackground
               source={require('../FishermansTrackerAssets/images/mainbg.png')}
-              style={styles.detailScreen}
+              style={styles.buddyTrckrDetailScreen}
             >
-              <View style={styles.detailHeader}>
+              <View style={styles.buddyTrckrDetailHeader}>
                 <Image
                   source={require('../FishermansTrackerAssets/images/header.png')}
-                  style={styles.header}
+                  style={styles.buddyTrckrHeader}
                 />
                 <Image
                   source={require('../FishermansTrackerAssets/images/headerImg.png')}
-                  style={styles.headerImg}
+                  style={styles.buddyTrckrHeaderImg}
                 />
                 <TouchableOpacity
-                  style={styles.backButton}
+                  style={styles.buddyTrckrBackButton}
                   onPress={closeDetail}
                   activeOpacity={0.8}
                 >
                   <Image
                     source={require('../FishermansTrackerAssets/images/backArrow.png')}
                   />
-                  <Text style={styles.backButtonText}>Back</Text>
+                  <Text style={styles.buddyTrckrBackButtonText}>Back</Text>
                 </TouchableOpacity>
               </View>
 
               <ScrollView
-                style={styles.detailScroll}
-                contentContainerStyle={styles.detailScrollContent}
+                style={styles.buddyTrckrDetailScroll}
+                contentContainerStyle={styles.buddyTrckrDetailScrollContent}
                 showsVerticalScrollIndicator={false}
                 bounces={false}
               >
-                <View style={styles.detailCard}>
-                  <View style={styles.detailTitleRow}>
-                    <View style={styles.detailBookIconWrap}>
+                <View style={styles.buddyTrckrDetailCard}>
+                  <View style={styles.buddyTrckrDetailTitleRow}>
+                    <View style={styles.buddyTrckrDetailBookIconWrap}>
                       <Image
                         source={require('../FishermansTrackerAssets/images/recipes.png')}
-                        style={styles.detailBookIcon}
+                        style={styles.buddyTrckrDetailBookIcon}
                       />
                     </View>
-                    <Text style={styles.detailTitle} numberOfLines={2}>
+                    <Text
+                      style={styles.buddyTrckrDetailTitle}
+                      numberOfLines={2}
+                    >
                       {detailRecipe.title}
                     </Text>
                     <TouchableOpacity
-                      style={styles.detailBookmarkBtn}
-                      onPress={() => toggleSaved(detailRecipe.id)}
+                      style={styles.buddyTrckrDetailBookmarkBtn}
+                      onPress={() => toggleSavedRecipe(detailRecipe.id)}
                       activeOpacity={0.8}
                     >
                       {savedIds.has(detailRecipe.id) ? (
                         <Image
                           source={require('../FishermansTrackerAssets/images/saved.png')}
-                          style={styles.detailBookmarkIcon}
+                          style={styles.buddyTrckrDetailBookmarkIcon}
                         />
                       ) : (
                         <Image
                           source={require('../FishermansTrackerAssets/images/save.png')}
-                          style={styles.detailBookmarkIcon}
+                          style={styles.buddyTrckrDetailBookmarkIcon}
                         />
                       )}
                     </TouchableOpacity>
                   </View>
-                  <View style={styles.detailTags}>
-                    <View style={styles.recipeTag}>
-                      <Text style={styles.recipeTagText}>
+                  <View style={styles.buddyTrckrDetailTags}>
+                    <View style={styles.buddyTrckrRecipeTag}>
+                      <Text style={styles.buddyTrckrRecipeTagText}>
                         Servings: {detailRecipe.servings}
                       </Text>
                     </View>
-                    <View style={styles.recipeTag}>
-                      <Text style={styles.recipeTagText}>
+                    <View style={styles.buddyTrckrRecipeTag}>
+                      <Text style={styles.buddyTrckrRecipeTagText}>
                         Time: ~{detailRecipe.time} min
                       </Text>
                     </View>
                   </View>
-                  <Text style={styles.detailSectionTitle}>Ingredients:</Text>
-                  <Text style={styles.detailBody}>
+                  <Text style={styles.buddyTrckrDetailSectionTitle}>
+                    Ingredients:
+                  </Text>
+                  <Text style={styles.buddyTrckrDetailBody}>
                     {detailRecipe.ingredients}
                   </Text>
-                  <Text style={styles.detailSectionTitle}>Steps:</Text>
-                  <Text style={styles.detailBody}>
-                    {detailRecipe.steps
-                      .split('\n')
-                      .filter(Boolean)
-                      .map((line, i) => `${i + 1}. ${line}`)
-                      .join('\n')}
+                  <Text style={styles.buddyTrckrDetailSectionTitle}>
+                    Steps:
+                  </Text>
+                  <Text style={styles.buddyTrckrDetailBody}>
+                    {formatRecipeSteps(detailRecipe.steps)}
                   </Text>
                   <TouchableOpacity
                     onPress={() => shareRecipe(detailRecipe)}
                     activeOpacity={0.8}
-                    style={styles.shareButtonContainer}
+                    style={styles.buddyTrckrShareButtonContainer}
                   >
                     <LinearGradient
                       colors={['#A2E8D5', '#FFFAD0', '#2CCCE7']}
                       start={{ x: 0, y: 0 }}
                       end={{ x: 1, y: 0 }}
-                      style={styles.shareButton}
+                      style={styles.buddyTrckrShareButton}
                     >
                       <Image
                         source={require('../FishermansTrackerAssets/images/share.png')}
-                        style={styles.shareButtonIcon}
+                        style={styles.buddyTrckrShareButtonIcon}
                       />
-                      <Text style={styles.shareButtonText}>Share</Text>
+                      <Text style={styles.buddyTrckrShareButtonText}>
+                        Share
+                      </Text>
                     </LinearGradient>
                   </TouchableOpacity>
                 </View>
@@ -546,25 +565,25 @@ const FishermansTrackerRecipes: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
+  buddyTrckrContainer: {
     flex: 1,
   },
-  headerContainer: {
+  buddyTrckrHeaderContainer: {
     width: '100%',
     marginBottom: 8,
   },
-  header: {
+  buddyTrckrHeader: {
     width: '100%',
     height: 156,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
   },
-  headerImg: {
+  buddyTrckrHeaderImg: {
     position: 'absolute',
     right: 20,
     bottom: -10,
   },
-  profileButton: {
+  buddyTrckrProfileButton: {
     position: 'absolute',
     left: 15,
     top: 50,
@@ -578,27 +597,27 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#fff',
   },
-  profileButtonText: {
+  buddyTrckrProfileButtonText: {
     fontSize: 16,
     fontWeight: '500',
     color: '#fff',
   },
-  content: {
+  buddyTrckrContent: {
     flex: 1,
     paddingHorizontal: 20,
     paddingBottom: 100,
   },
-  screenTitle: {
+  buddyTrckrScreenTitle: {
     fontSize: 20,
     fontWeight: '700',
     color: '#fff',
     marginBottom: 16,
     marginTop: 10,
   },
-  listContent: {
+  buddyTrckrListContent: {
     paddingBottom: 20,
   },
-  recipeCard: {
+  buddyTrckrRecipeCard: {
     flexDirection: 'row',
     alignItems: 'center',
     width: '100%',
@@ -609,59 +628,53 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#fff',
   },
-  recipeCardLeft: {
+  buddyTrckrRecipeCardLeft: {
     width: 48,
     height: 48,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
-  recipeBookIcon: {
-    fontSize: 28,
-  },
-  recipeCardBody: {
+  buddyTrckrRecipeCardBody: {
     flex: 1,
   },
-  recipeCardTitle: {
+  buddyTrckrRecipeCardTitle: {
     fontSize: 16,
     fontWeight: '700',
     color: '#fff',
     marginBottom: 8,
   },
-  recipeTags: {
+  buddyTrckrRecipeTags: {
     flexDirection: 'row',
     gap: 8,
     marginTop: 4,
   },
-  recipeTag: {
+  buddyTrckrRecipeTag: {
     backgroundColor: '#FFC813',
     paddingVertical: 6,
     paddingHorizontal: 10,
     borderRadius: 60,
   },
-  recipeTagText: {
+  buddyTrckrRecipeTagText: {
     fontSize: 12,
     fontWeight: '500',
     color: '#286E42',
   },
-  bookmarkButton: {
+  buddyTrckrBookmarkButton: {
     width: 36,
     height: 36,
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 8,
   },
-  bookmarkIcon: {
-    fontSize: 24,
-  },
-  detailScreen: {
+  buddyTrckrDetailScreen: {
     flex: 1,
   },
-  detailHeader: {
+  buddyTrckrDetailHeader: {
     width: '100%',
     marginBottom: 0,
   },
-  backButton: {
+  buddyTrckrBackButton: {
     position: 'absolute',
     left: 15,
     top: 50,
@@ -675,21 +688,21 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#fff',
   },
-  backButtonText: {
+  buddyTrckrBackButtonText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#fff',
   },
-  detailScroll: {
+  buddyTrckrDetailScroll: {
     flex: 1,
   },
-  detailScrollContent: {
+  buddyTrckrDetailScrollContent: {
     paddingHorizontal: 20,
     paddingBottom: 100,
     paddingTop: 40,
     flexGrow: 1,
   },
-  detailCard: {
+  buddyTrckrDetailCard: {
     backgroundColor: '#286E42',
     borderRadius: 30,
     padding: 24,
@@ -697,57 +710,57 @@ const styles = StyleSheet.create({
     borderColor: '#fff',
     marginTop: -20,
   },
-  detailTitleRow: {
+  buddyTrckrDetailTitleRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     marginBottom: 12,
   },
-  detailBookIconWrap: {
+  buddyTrckrDetailBookIconWrap: {
     width: 58,
     height: 48,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
-  detailBookIcon: {},
-  detailTitle: {
+  buddyTrckrDetailBookIcon: {},
+  buddyTrckrDetailTitle: {
     flex: 1,
     fontSize: 18,
     fontWeight: '600',
     color: '#fff',
   },
-  detailBookmarkBtn: {
+  buddyTrckrDetailBookmarkBtn: {
     width: 36,
     height: 36,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  detailBookmarkIcon: {
+  buddyTrckrDetailBookmarkIcon: {
     width: 24,
     height: 24,
   },
-  detailTags: {
+  buddyTrckrDetailTags: {
     flexDirection: 'row',
     gap: 8,
     marginBottom: 20,
   },
-  detailSectionTitle: {
+  buddyTrckrDetailSectionTitle: {
     fontSize: 16,
     fontWeight: '600',
     color: '#fff',
     marginBottom: 8,
   },
-  detailBody: {
+  buddyTrckrDetailBody: {
     fontSize: 14,
     color: '#fff',
     lineHeight: 22,
     marginBottom: 20,
   },
-  shareButtonContainer: {
+  buddyTrckrShareButtonContainer: {
     width: '100%',
     marginTop: 8,
   },
-  shareButton: {
+  buddyTrckrShareButton: {
     width: '100%',
     height: 51,
     borderRadius: 60,
@@ -756,11 +769,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  shareButtonIcon: {
+  buddyTrckrShareButtonIcon: {
     width: 22,
     height: 22,
   },
-  shareButtonText: {
+  buddyTrckrShareButtonText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#007083',

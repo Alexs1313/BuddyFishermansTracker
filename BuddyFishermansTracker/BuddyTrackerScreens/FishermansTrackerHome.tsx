@@ -10,25 +10,52 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import type { StackNavigationProp } from '@react-navigation/stack';
 import LinearGradient from 'react-native-linear-gradient';
+import type { StackList } from '../TrackerNavigation/FishermansStackRoutes';
 import type { LocationItem } from './FishermansTrackerLocations';
 import type { RecipeItem } from './FishermansTrackerRecipes';
 import { RECIPES_DATA } from './FishermansTrackerRecipes';
+import { useStorage } from '../FishermansStore/fishermansContxt';
+import {
+  LOCATIONS_STORAGE_KEY,
+  PROFILE_STORAGE_KEY,
+  SAVED_RECIPES_KEY,
+  NOTIFICATIONS_KEY,
+  getBiggestCatchKg,
+} from '../fishermansUtils';
 
-const LOCATIONS_STORAGE_KEY = '@FishermansTracker/locations';
-const PROFILE_STORAGE_KEY = '@FishermansTracker/profile';
-const SAVED_RECIPES_KEY = '@FishermansTracker/savedRecipes';
-
-const MAX_LOCATION_CARDS = 2;
-const MAX_RECIPE_CARDS = 2;
+const bgPath = require('../FishermansTrackerAssets/images/mainbg.png');
+const headerPath = require('../FishermansTrackerAssets/images/header.png');
+const bColors = ['#A2E8D5', '#FFFAD0', '#2CCCE7'];
+const primYellow = '#FFC813';
+const white = '#fff';
+const green = '#286E42';
+const blue = '#007083';
 
 const FishermansTrackerHome: React.FC = () => {
-  const navigation = useNavigation();
+  const navigation =
+    useNavigation<StackNavigationProp<StackList, 'FishermansTabsRoutes'>>();
   const [locations, setLocations] = useState<LocationItem[]>([]);
   const [savedRecipeIds, setSavedRecipeIds] = useState<string[]>([]);
   const [profileNickname, setProfileNickname] = useState<string | null>(null);
 
-  const loadData = useCallback(async () => {
+  const { setIsEnabledNotifications } = useStorage();
+
+  const loadNotifications = async () => {
+    try {
+      const notifValue = await AsyncStorage.getItem(NOTIFICATIONS_KEY);
+      const parsedJSON = notifValue ? JSON.parse(notifValue) : null;
+      if (typeof parsedJSON === 'boolean')
+        setIsEnabledNotifications(parsedJSON);
+    } catch (err) {
+      if (__DEV__) {
+        console.warn('FishermansTrackerHome: loadNotifications failed!', err);
+      }
+    }
+  };
+
+  const fetchSavedData = async () => {
     try {
       const [locRaw, profileRaw, recipesRaw] = await Promise.all([
         AsyncStorage.getItem(LOCATIONS_STORAGE_KEY),
@@ -55,17 +82,21 @@ const FishermansTrackerHome: React.FC = () => {
       } else {
         setSavedRecipeIds([]);
       }
-    } catch {
+    } catch (err) {
+      if (__DEV__) {
+        console.warn('FishermansTrackerHome: load SavedData failed', err);
+      }
       setLocations([]);
       setSavedRecipeIds([]);
       setProfileNickname(null);
     }
-  }, []);
+  };
 
   useFocusEffect(
     useCallback(() => {
-      loadData();
-    }, [loadData]),
+      loadNotifications();
+      fetchSavedData();
+    }, []),
   );
 
   const totalTrips = locations.length;
@@ -73,80 +104,51 @@ const FishermansTrackerHome: React.FC = () => {
     (sum, loc) => sum + (loc.catches?.length ?? 0),
     0,
   );
+  const biggestCatchKg = getBiggestCatchKg(locations);
 
-  let biggestCatchKg: number | null = null;
-  for (const loc of locations) {
-    for (const c of loc.catches ?? []) {
-      const weightStr = (c.weight || '').trim().replace(',', '.');
-      const w = parseFloat(weightStr);
-      if (
-        !Number.isNaN(w) &&
-        w > 0 &&
-        (biggestCatchKg === null || w > biggestCatchKg)
-      ) {
-        biggestCatchKg = w;
-      }
-    }
-  }
-
-  const recentLocations = locations.slice(0, MAX_LOCATION_CARDS);
+  const recentLocations = locations.slice(0, 2);
   const savedRecipes: RecipeItem[] = savedRecipeIds
     .map(id => RECIPES_DATA.find(r => r.id === id))
     .filter((r): r is RecipeItem => r != null)
-    .slice(0, MAX_RECIPE_CARDS);
+    .slice(0, 2);
 
-  const openProfile = useCallback(() => {
-    (navigation as { navigate: (s: string) => void }).navigate(
-      'FishermansTrackerProfile',
-    );
-  }, [navigation]);
+  const openProfile = () => {
+    navigation.navigate('FishermansTrackerProfile');
+  };
 
-  const openMap = useCallback(() => {
-    (navigation as { navigate: (s: string) => void }).navigate(
-      'FishermansTrackerMap',
-    );
-  }, [navigation]);
+  const openMap = () => {
+    navigation.navigate('FishermansTrackerMap');
+  };
 
-  const openLocationsTab = useCallback(() => {
-    (navigation as { navigate: (s: string) => void }).navigate(
-      'FishermansTrackerLocations',
-    );
-  }, [navigation]);
+  const openLocationsTab = () => {
+    navigation.navigate('FishermansTabsRoutes', {
+      screen: 'FishermansTrackerLocations',
+    });
+  };
 
-  const openRecipesTab = useCallback(() => {
-    (navigation as { navigate: (s: string) => void }).navigate(
-      'FishermansTrackerRecipes',
-    );
-  }, [navigation]);
+  const openRecipesTab = () => {
+    navigation.navigate('FishermansTabsRoutes', {
+      screen: 'FishermansTrackerRecipes',
+    });
+  };
 
-  const openLocationDetail = useCallback(
-    (item: LocationItem) => {
-      (
-        navigation as {
-          navigate: (s: string, p: { locationId: string }) => void;
-        }
-      ).navigate('FishermansTrackerLocationDetail', { locationId: item.id });
-    },
-    [navigation],
-  );
+  const openLocationDetail = (item: LocationItem) => {
+    navigation.navigate('FishermansTrackerLocationDetail', {
+      locationId: item.id,
+    });
+  };
 
   return (
-    <ImageBackground
-      source={require('../FishermansTrackerAssets/images/mainbg.png')}
-      style={styles.container}
-    >
+    <ImageBackground source={bgPath} style={styles.fshCnt}>
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         bounces={false}
       >
-        <View style={styles.headerContainer}>
-          <Image
-            source={require('../FishermansTrackerAssets/images/header.png')}
-            style={styles.header}
-          />
+        <View style={styles.headerFshCnt}>
+          <Image source={headerPath} style={styles.headerFsh} />
           <TouchableOpacity
-            style={styles.profileButton}
+            style={styles.profButton}
             activeOpacity={0.8}
             onPress={openProfile}
           >
@@ -246,7 +248,7 @@ const FishermansTrackerHome: React.FC = () => {
               style={styles.addButtonContainer}
             >
               <LinearGradient
-                colors={['#A2E8D5', '#FFFAD0', '#2CCCE7']}
+                colors={bColors}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={styles.addButton}
@@ -303,7 +305,7 @@ const FishermansTrackerHome: React.FC = () => {
               style={styles.addButtonContainer}
             >
               <LinearGradient
-                colors={['#A2E8D5', '#FFFAD0', '#2CCCE7']}
+                colors={bColors}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={styles.addButton}
@@ -322,18 +324,18 @@ const FishermansTrackerHome: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
+  fshCnt: {
     flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
     paddingBottom: 100,
   },
-  headerContainer: {
+  headerFshCnt: {
     width: '100%',
     marginBottom: 8,
   },
-  header: {
+  headerFsh: {
     width: '100%',
     height: 156,
     borderBottomLeftRadius: 30,
@@ -344,11 +346,11 @@ const styles = StyleSheet.create({
     right: 20,
     bottom: -10,
   },
-  profileButton: {
+  profButton: {
     position: 'absolute',
     left: 15,
     top: 50,
-    backgroundColor: '#286E42',
+    backgroundColor: green,
     paddingVertical: 10,
     paddingHorizontal: 14,
     borderRadius: 60,
@@ -356,12 +358,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
     borderWidth: 1,
-    borderColor: '#fff',
+    borderColor: white,
   },
   profileButtonText: {
     fontSize: 16,
     fontWeight: '500',
-    color: '#fff',
+    color: white,
   },
   content: {
     flex: 1,
@@ -370,7 +372,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#fff',
+    color: white,
     marginBottom: 12,
     marginTop: 16,
   },
@@ -385,7 +387,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   seeAllButton: {
-    backgroundColor: '#FFC813',
+    backgroundColor: primYellow,
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 60,
@@ -393,7 +395,7 @@ const styles = StyleSheet.create({
   seeAllText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#286E42',
+    color: green,
   },
   statsRow: {
     flexDirection: 'row',
@@ -402,27 +404,21 @@ const styles = StyleSheet.create({
   },
   statCard: {
     flex: 1,
-    backgroundColor: '#286E42',
+    backgroundColor: green,
     borderRadius: 20,
     padding: 12,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#fff',
-  },
-  statIcon: {
-    width: 28,
-    height: 28,
-    marginBottom: 6,
-    tintColor: '#FFC813',
+    borderColor: white,
   },
   statValue: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#FFC813',
+    color: primYellow,
   },
   statLabel: {
     fontSize: 10,
-    color: '#FFF',
+    color: white,
     fontWeight: '600',
     marginTop: 8,
   },
@@ -430,12 +426,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     width: '100%',
-    backgroundColor: '#286E42',
+    backgroundColor: green,
     borderRadius: 20,
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#fff',
+    borderColor: white,
   },
   locationCardIcon: {
     justifyContent: 'center',
@@ -448,12 +444,12 @@ const styles = StyleSheet.create({
   locationCardTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#fff',
+    color: white,
     marginBottom: 4,
   },
   locationCardDate: {
     fontSize: 14,
-    color: '#FFC813',
+    color: primYellow,
   },
   addButtonContainer: {
     width: '100%',
@@ -469,26 +465,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  addButtonIcon: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#007083',
-  },
   addButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#007083',
+    color: blue,
   },
   recipeCard: {
     flexDirection: 'row',
     alignItems: 'center',
     width: '100%',
-    backgroundColor: '#286E42',
+    backgroundColor: green,
     borderRadius: 20,
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#fff',
+    borderColor: white,
   },
   recipeCardLeft: {
     width: 48,
@@ -503,7 +494,7 @@ const styles = StyleSheet.create({
   recipeCardTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#fff',
+    color: white,
     marginBottom: 8,
   },
   recipeTags: {
@@ -512,7 +503,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   recipeTag: {
-    backgroundColor: '#FFC813',
+    backgroundColor: primYellow,
     paddingVertical: 6,
     paddingHorizontal: 10,
     borderRadius: 60,
@@ -520,7 +511,7 @@ const styles = StyleSheet.create({
   recipeTagText: {
     fontSize: 12,
     fontWeight: '500',
-    color: '#286E42',
+    color: green,
   },
   bookmarkButton: {
     width: 36,

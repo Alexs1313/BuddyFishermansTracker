@@ -1,7 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BlurView } from '@react-native-community/blur';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
+import type { StackNavigationProp } from '@react-navigation/stack';
 import {
   Alert,
   FlatList,
@@ -18,9 +19,13 @@ import {
   ScrollView,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-
-const NOTES_STORAGE_KEY = '@FishermansTracker/notes';
-const PROFILE_STORAGE_KEY = '@FishermansTracker/profile';
+import Toast from 'react-native-toast-message';
+import { StackList } from '../TrackerNavigation/FishermansStackRoutes';
+import {
+  NOTES_STORAGE_KEY,
+  PROFILE_STORAGE_KEY,
+  formatDate,
+} from '../fishermansUtils';
 
 export type NoteItem = {
   id: string;
@@ -29,23 +34,16 @@ export type NoteItem = {
   date: string;
 };
 
-function formatNoteDate(date: Date): string {
-  return date.toLocaleDateString('en-GB', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
-}
-
 const FishermansTrackerNotes: React.FC = () => {
-  const navigation = useNavigation();
+  const navigation =
+    useNavigation<StackNavigationProp<StackList, 'FishermansTabsRoutes'>>();
   const [notes, setNotes] = useState<NoteItem[]>([]);
   const [profileNickname, setProfileNickname] = useState<string | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [title, setTitle] = useState('');
   const [details, setDetails] = useState('');
 
-  const loadProfile = useCallback(async () => {
+  const loadProfile = async () => {
     try {
       const raw = await AsyncStorage.getItem(PROFILE_STORAGE_KEY);
       if (raw) {
@@ -54,60 +52,66 @@ const FishermansTrackerNotes: React.FC = () => {
           typeof parsed?.nickname === 'string' ? parsed.nickname : null,
         );
       }
-    } catch {
+    } catch (err) {
+      if (__DEV__) {
+        console.warn('FishermansTrackerNotes: loadProfile failed', err);
+      }
       setProfileNickname(null);
     }
-  }, []);
+  };
 
-  const loadNotes = useCallback(async () => {
+  const loadNotes = async () => {
     try {
       const raw = await AsyncStorage.getItem(NOTES_STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw) as NoteItem[];
         setNotes(Array.isArray(parsed) ? parsed : []);
       }
-    } catch {
+    } catch (err) {
+      if (__DEV__) {
+        console.warn('FishermansTrackerNotes: loadNotes failed', err);
+      }
       setNotes([]);
     }
-  }, []);
+  };
 
-  const saveNotes = useCallback(async (nextNotes: NoteItem[]) => {
+  const saveNotes = async (nextNotes: NoteItem[]) => {
     try {
       await AsyncStorage.setItem(NOTES_STORAGE_KEY, JSON.stringify(nextNotes));
-    } catch (_) {}
-  }, []);
-
-  useEffect(() => {
-    loadNotes();
-    loadProfile();
-  }, [loadNotes, loadProfile]);
+    } catch (err) {
+      if (__DEV__) {
+        console.warn('FishermansTrackerNotes: saveNotes failed', err);
+      }
+    }
+  };
 
   useFocusEffect(
     useCallback(() => {
+      loadNotes();
       loadProfile();
-    }, [loadProfile]),
+    }, []),
   );
 
-  const openAdd = useCallback(() => {
+  const openAdd = () => {
     setTitle('');
     setDetails('');
     setModalVisible(true);
-  }, []);
+  };
 
-  const closeModal = useCallback(() => {
+  const closeModal = () => {
     setModalVisible(false);
     setTitle('');
     setDetails('');
-  }, []);
+  };
 
-  const handleShareNote = useCallback((note: NoteItem) => {
+  const handleShareNote = (note: NoteItem) => {
     const message = [note.title, note.date, note.details]
       .filter(Boolean)
       .join('\n\n');
     Share.share({ message, title: note.title });
-  }, []);
+  };
 
-  const handleSaveNote = useCallback(() => {
+  const handleSaveNote = () => {
     const t = title.trim();
     if (!t) return;
     const now = new Date();
@@ -115,38 +119,41 @@ const FishermansTrackerNotes: React.FC = () => {
       id: Date.now().toString(),
       title: t,
       details: details.trim(),
-      date: formatNoteDate(now),
+      date: formatDate(now),
     };
     setNotes(prev => {
       const next = [newNote, ...prev];
-      saveNotes(next);
+      saveNotes(next).then(() => {
+        Toast.show({
+          type: 'success',
+          text1: 'Note successfully saved!',
+          position: 'top',
+          visibilityTime: 2000,
+        });
+      });
       return next;
     });
     closeModal();
-  }, [title, details, saveNotes, closeModal]);
+  };
 
-  const confirmDelete = useCallback(
-    (id: string) => {
-      Alert.alert('Remove Note?', 'This action cannot be undone', [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => {
-            setNotes(prev => {
-              const next = prev.filter(n => n.id !== id);
-              saveNotes(next);
-              return next;
-            });
-          },
+  const confirmDelete = (id: string) => {
+    Alert.alert('Remove Note?', 'This action cannot be undone', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: () => {
+          setNotes(prev => {
+            const next = prev.filter(n => n.id !== id);
+            saveNotes(next);
+            return next;
+          });
         },
-      ]);
-    },
-    [saveNotes],
-  );
+      },
+    ]);
+  };
 
-  const renderNoteCard = useCallback(
-    ({ item }: { item: NoteItem }) => (
+  const renderNoteCard = ({ item }: { item: NoteItem }) => (
       <View style={styles.noteCard}>
         <TouchableOpacity
           style={styles.noteCardArrow}
@@ -173,8 +180,6 @@ const FishermansTrackerNotes: React.FC = () => {
           </Text>
         </TouchableOpacity>
       </View>
-    ),
-    [handleShareNote, confirmDelete],
   );
 
   return (
@@ -195,11 +200,7 @@ const FishermansTrackerNotes: React.FC = () => {
           <TouchableOpacity
             style={styles.profileButton}
             activeOpacity={0.8}
-            onPress={() =>
-              (navigation as { navigate: (s: string) => void }).navigate(
-                'FishermansTrackerProfile',
-              )
-            }
+            onPress={() => navigation.navigate('FishermansTrackerProfile')}
           >
             <Image
               source={require('../FishermansTrackerAssets/images/settings.png')}
@@ -410,12 +411,6 @@ const styles = StyleSheet.create({
   listContent: {
     paddingBottom: 20,
   },
-  emptyText: {
-    fontSize: 16,
-    color: '#5A8F7A',
-    textAlign: 'center',
-    marginTop: 24,
-  },
   noteCard: {
     width: '100%',
     backgroundColor: '#286E42',
@@ -441,11 +436,6 @@ const styles = StyleSheet.create({
   noteCardArrowImage: {
     width: 20,
     height: 20,
-  },
-  noteCardArrowText: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#1a3a4a',
   },
   noteCardContent: {
     paddingRight: 44,

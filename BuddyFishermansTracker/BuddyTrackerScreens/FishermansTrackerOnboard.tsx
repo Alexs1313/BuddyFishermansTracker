@@ -162,11 +162,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   textboardText: {
-    fontSize: 24,
+    fontSize: 18,
     fontWeight: '700',
     color: '#fff',
     textAlign: 'center',
-    marginBottom: 15,
+    marginBottom: 10,
   },
   buttonText: {
     fontWeight: '500',
@@ -180,12 +180,12 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
   },
   textboardContent: {
-    padding: 30,
+    padding: 20,
     justifyContent: 'center',
     alignItems: 'center',
   },
   textboardSubText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '500',
     color: '#fff',
     textAlign: 'center',

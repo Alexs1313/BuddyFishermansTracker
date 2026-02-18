@@ -26,6 +26,7 @@ import {
   PROFILE_STORAGE_KEY,
   formatDate,
 } from '../fishermansUtils';
+import Orientation from 'react-native-orientation-locker';
 
 export type NoteItem = {
   id: string;
@@ -42,6 +43,16 @@ const FishermansTrackerNotes: React.FC = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [title, setTitle] = useState('');
   const [details, setDetails] = useState('');
+
+  useFocusEffect(
+    useCallback(() => {
+      if (Platform.OS === 'android' && modalVisible) {
+        Orientation.lockToPortrait();
+      }
+
+      return () => Orientation.unlockAllOrientations();
+    }, [modalVisible]),
+  );
 
   const loadProfile = async () => {
     try {
@@ -154,32 +165,32 @@ const FishermansTrackerNotes: React.FC = () => {
   };
 
   const renderNoteCard = ({ item }: { item: NoteItem }) => (
-      <View style={styles.noteCard}>
-        <TouchableOpacity
-          style={styles.noteCardArrow}
-          onPress={() => handleShareNote(item)}
-          activeOpacity={0.8}
-        >
-          <Image
-            source={require('../FishermansTrackerAssets/images/share.png')}
-            style={styles.noteCardArrowImage}
-          />
-        </TouchableOpacity>
-        <TouchableOpacity
-          activeOpacity={1}
-          onLongPress={() => confirmDelete(item.id)}
-          style={styles.noteCardContent}
-        >
-          <Text style={styles.noteCardTitle} numberOfLines={1}>
-            {item.title}
-          </Text>
-          <Text style={styles.noteCardDate}>{item.date}</Text>
-          <Text style={styles.noteCardDetails} numberOfLines={3}>
-            {item.details ||
-              "Note down details you'd like to remember for next time..."}
-          </Text>
-        </TouchableOpacity>
-      </View>
+    <View style={styles.noteCard}>
+      <TouchableOpacity
+        style={styles.noteCardArrow}
+        onPress={() => handleShareNote(item)}
+        activeOpacity={0.8}
+      >
+        <Image
+          source={require('../FishermansTrackerAssets/images/share.png')}
+          style={styles.noteCardArrowImage}
+        />
+      </TouchableOpacity>
+      <TouchableOpacity
+        activeOpacity={1}
+        onLongPress={() => confirmDelete(item.id)}
+        style={styles.noteCardContent}
+      >
+        <Text style={styles.noteCardTitle} numberOfLines={1}>
+          {item.title}
+        </Text>
+        <Text style={styles.noteCardDate}>{item.date}</Text>
+        <Text style={styles.noteCardDetails} numberOfLines={3}>
+          {item.details ||
+            "Note down details you'd like to remember for next time..."}
+        </Text>
+      </TouchableOpacity>
+    </View>
   );
 
   return (
@@ -251,6 +262,7 @@ const FishermansTrackerNotes: React.FC = () => {
           transparent
           animationType="fade"
           onRequestClose={closeModal}
+          statusBarTranslucent={Platform.OS === 'android'}
         >
           {Platform.OS === 'ios' && (
             <BlurView

@@ -262,6 +262,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#799930',
     borderRadius: 60,
     padding: 12,
+    paddingHorizontal: 5,
     gap: 8,
   },
   unitOptnActive: {},
@@ -278,7 +279,7 @@ const styles = StyleSheet.create({
     borderColor: '#fff',
   },
   unitLabelTxt: {
-    fontSize: 13,
+    fontSize: 12,
     color: '#fff',
     fontWeight: '500',
   },

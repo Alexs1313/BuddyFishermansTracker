@@ -5,6 +5,7 @@ import {
   Easing,
   Image,
   ImageBackground,
+  Platform,
   StyleSheet,
 } from 'react-native';
 import type { StackNavigationProp } from '@react-navigation/stack';
@@ -47,11 +48,19 @@ const FishermansTrackerLoader: React.FC = () => {
       style={styles.container}
     >
       <Animated.View style={[styles.imageWrap, { transform: [{ scale }] }]}>
-        <Image
-          source={require('../FishermansTrackerAssets/images/loaderimg.png')}
-          style={styles.image}
-          resizeMode="contain"
-        />
+        {Platform.OS === 'ios' ? (
+          <Image
+            source={require('../FishermansTrackerAssets/images/loaderimg.png')}
+            style={styles.image}
+            resizeMode="contain"
+          />
+        ) : (
+          <Image
+            source={require('../FishermansTrackerAssets/images/loaderimgandr.png')}
+            style={styles.image}
+            resizeMode="contain"
+          />
+        )}
       </Animated.View>
     </ImageBackground>
   );

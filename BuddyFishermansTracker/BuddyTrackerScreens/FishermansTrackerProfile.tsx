@@ -14,6 +14,7 @@ import {
   TouchableOpacity,
   View,
   Linking,
+  Platform,
 } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import type { StackNavigationProp } from '@react-navigation/stack';
@@ -45,7 +46,7 @@ const FishermansTrackerProfile: React.FC = () => {
   const [initialData, setInitialData] = useState<ProfileData | null>(null);
   const { isEnabledNotifications, setIsEnabledNotifications } = useStorage();
 
-  const toggleBadenNotifications = async (value: boolean) => {
+  const toggleNotifications = async (value: boolean) => {
     Toast.show({
       type: 'success',
       text1: `Notifications ${value ? 'enabled' : 'disabled'}`,
@@ -59,7 +60,7 @@ const FishermansTrackerProfile: React.FC = () => {
     } catch (err) {
       if (__DEV__) {
         console.warn(
-          'FishermansTrackerProfile: toggleBadenNotifications failed',
+          'FishermansTrackerProfile: toggleNotifications failed',
           err,
         );
       }
@@ -315,21 +316,23 @@ const FishermansTrackerProfile: React.FC = () => {
               <Text style={styles.settingsRowText}>Notifications</Text>
               <Switch
                 value={isEnabledNotifications}
-                onValueChange={value => toggleBadenNotifications(value)}
+                onValueChange={value => toggleNotifications(value)}
                 trackColor={{ false: '#ccc', true: '#FF9F29' }}
                 thumbColor="#fff"
               />
             </View>
-            <TouchableOpacity
-              style={styles.settingsRow}
-              onPress={handleShareApp}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.settingsRowText}>Share the App</Text>
-              <Image
-                source={require('../FishermansTrackerAssets/images/shareapp.png')}
-              />
-            </TouchableOpacity>
+            {Platform.OS === 'ios' && (
+              <TouchableOpacity
+                style={styles.settingsRow}
+                onPress={handleShareApp}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.settingsRowText}>Share the App</Text>
+                <Image
+                  source={require('../FishermansTrackerAssets/images/shareapp.png')}
+                />
+              </TouchableOpacity>
+            )}
             <TouchableOpacity
               style={styles.settingsRow}
               onPress={handleResetData}
@@ -340,17 +343,19 @@ const FishermansTrackerProfile: React.FC = () => {
                 source={require('../FishermansTrackerAssets/images/reset.png')}
               />
             </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.settingsRow, { justifyContent: 'center' }]}
-              activeOpacity={0.8}
-              onPress={() =>
-                Linking.openURL(
-                  'https://www.termsfeed.com/live/72f3fddd-07b9-4f5f-8318-60f63e1c3d2b',
-                )
-              }
-            >
-              <Text style={[styles.settingsRowText]}>Terms of Use</Text>
-            </TouchableOpacity>
+            {Platform.OS === 'ios' && (
+              <TouchableOpacity
+                style={[styles.settingsRow, { justifyContent: 'center' }]}
+                activeOpacity={0.8}
+                onPress={() =>
+                  Linking.openURL(
+                    'https://www.termsfeed.com/live/72f3fddd-07b9-4f5f-8318-60f63e1c3d2b',
+                  )
+                }
+              >
+                <Text style={[styles.settingsRowText]}>Terms of Use</Text>
+              </TouchableOpacity>
+            )}
           </View>
         </View>
       </ScrollView>
@@ -455,7 +460,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#799930',
     borderRadius: 60,
-    padding: 12,
+    padding: 10,
     gap: 8,
   },
   unitOptionActive: {},

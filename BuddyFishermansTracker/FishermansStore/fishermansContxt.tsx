@@ -1,23 +1,13 @@
 import React, {
   createContext,
   useContext,
-  useMemo,
   useState,
   type PropsWithChildren,
 } from 'react';
 
 type StoreContextValue = {
-  isEnabledVibration: boolean;
-  setIsEnabledVibration: React.Dispatch<React.SetStateAction<boolean>>;
-
-  isEnabledSound: boolean;
-  setIsEnabledSound: React.Dispatch<React.SetStateAction<boolean>>;
-
   isEnabledNotifications: boolean;
   setIsEnabledNotifications: React.Dispatch<React.SetStateAction<boolean>>;
-
-  winClick: () => void;
-  loseClick: () => void;
 };
 
 export const StoreContext = createContext<StoreContextValue | undefined>(

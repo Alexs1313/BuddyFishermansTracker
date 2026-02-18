@@ -141,10 +141,13 @@ const FishermansTrackerLocationDetail: React.FC = () => {
     }
   };
 
+  const displayTitle = location?.catches?.[0]?.title ?? location?.title ?? '';
+
   const handleShare = () => {
     if (!location) return;
-    const message = `${location.title}\n${location.date}\nhttps://www.google.com/maps?q=${location.latitude},${location.longitude}`;
-    Share.share({ message, title: location.title });
+    const titleForShare = location.catches?.[0]?.title ?? location.title;
+    const message = `${titleForShare}\n${location.date}\nhttps://www.google.com/maps?q=${location.latitude},${location.longitude}`;
+    Share.share({ message, title: titleForShare });
   };
 
   if (!location) {
@@ -196,7 +199,7 @@ const FishermansTrackerLocationDetail: React.FC = () => {
                 />
               </View>
               <View style={styles.titleBody}>
-                <Text style={styles.titleText}>{location.title}</Text>
+                <Text style={styles.titleText}>{displayTitle}</Text>
                 <Text style={styles.dateText}>{location.date}</Text>
               </View>
             </View>
@@ -223,7 +226,7 @@ const FishermansTrackerLocationDetail: React.FC = () => {
                 )}
                 {location.catches && location.catches.length > 0 && (
                   <View style={styles.catchesSection}>
-                    {location.catches.map(c => (
+                    {location.catches.map((c, index) => (
                       <View key={c.id} style={styles.catchCard}>
                         <View style={styles.catchCardLeft}>
                           {c.imageUri ? (
@@ -242,7 +245,11 @@ const FishermansTrackerLocationDetail: React.FC = () => {
                         </View>
                         <View style={styles.catchCardBody}>
                           <Text style={styles.catchCardTitle} numberOfLines={1}>
-                            {c.title}
+                            {index === 0
+                              ? 'First fish caught'
+                              : index === 1
+                                ? 'Second fish caught'
+                                : c.title}
                           </Text>
                           <Text style={styles.catchCardMeta} numberOfLines={1}>
                             {[c.species, c.equipment]

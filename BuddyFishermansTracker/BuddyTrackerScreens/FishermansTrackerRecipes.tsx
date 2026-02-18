@@ -8,6 +8,7 @@ import {
   Image,
   ImageBackground,
   Modal,
+  Platform,
   ScrollView,
   Share,
   StyleSheet,
@@ -22,6 +23,8 @@ import {
   SAVED_RECIPES_KEY,
   formatRecipeSteps,
 } from '../fishermansUtils';
+import { useStorage } from '../FishermansStore/fishermansContxt';
+import Orientation from 'react-native-orientation-locker';
 
 export type RecipeItem = {
   id: string;
@@ -262,6 +265,17 @@ const FishermansTrackerRecipes: React.FC = () => {
   const [profileNickname, setProfileNickname] = useState<string | null>(null);
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const [detailRecipe, setDetailRecipe] = useState<RecipeItem | null>(null);
+  const { isEnabledNotifications } = useStorage();
+
+  useFocusEffect(
+    useCallback(() => {
+      if (Platform.OS === 'android' && detailRecipe !== null) {
+        Orientation.lockToPortrait();
+      }
+
+      return () => Orientation.unlockAllOrientations();
+    }, [detailRecipe !== null]),
+  );
 
   const getSvdProfile = async () => {
     try {
@@ -310,12 +324,14 @@ const FishermansTrackerRecipes: React.FC = () => {
       else next.add(id);
       AsyncStorage.setItem(SAVED_RECIPES_KEY, JSON.stringify(Array.from(next)))
         .then(() => {
-          Toast.show({
-            type: 'success',
-            text1: wasSaved ? 'Removed from saved!' : 'Recipe saved!',
-            position: 'top',
-            visibilityTime: 2000,
-          });
+          if (isEnabledNotifications) {
+            Toast.show({
+              type: 'success',
+              text1: wasSaved ? 'Removed from saved!' : 'Recipe saved!',
+              position: 'top',
+              visibilityTime: 2000,
+            });
+          }
         })
         .catch(err => {
           if (__DEV__) {
@@ -347,52 +363,52 @@ const FishermansTrackerRecipes: React.FC = () => {
   };
 
   const renderRecipeCard = ({ item }: { item: RecipeItem }) => {
-      const saved = savedIds.has(item.id);
-      return (
-        <TouchableOpacity
-          style={styles.buddyTrckrRecipeCard}
-          activeOpacity={0.9}
-          onPress={() => openDetail(item)}
-        >
-          <View style={styles.buddyTrckrRecipeCardLeft}>
-            <Image
-              source={require('../FishermansTrackerAssets/images/recipes.png')}
-            />
-          </View>
-          <View style={styles.buddyTrckrRecipeCardBody}>
-            <Text style={styles.buddyTrckrRecipeCardTitle} numberOfLines={2}>
-              {item.title}
-            </Text>
-            <View style={styles.buddyTrckrRecipeTags}>
-              <View style={styles.buddyTrckrRecipeTag}>
-                <Text style={styles.buddyTrckrRecipeTagText}>
-                  Servings: {item.servings}
-                </Text>
-              </View>
-              <View style={styles.buddyTrckrRecipeTag}>
-                <Text style={styles.buddyTrckrRecipeTagText}>
-                  Time: ~{item.time} min
-                </Text>
-              </View>
+    const saved = savedIds.has(item.id);
+    return (
+      <TouchableOpacity
+        style={styles.buddyTrckrRecipeCard}
+        activeOpacity={0.9}
+        onPress={() => openDetail(item)}
+      >
+        <View style={styles.buddyTrckrRecipeCardLeft}>
+          <Image
+            source={require('../FishermansTrackerAssets/images/recipes.png')}
+          />
+        </View>
+        <View style={styles.buddyTrckrRecipeCardBody}>
+          <Text style={styles.buddyTrckrRecipeCardTitle} numberOfLines={2}>
+            {item.title}
+          </Text>
+          <View style={styles.buddyTrckrRecipeTags}>
+            <View style={styles.buddyTrckrRecipeTag}>
+              <Text style={styles.buddyTrckrRecipeTagText}>
+                Servings: {item.servings}
+              </Text>
+            </View>
+            <View style={styles.buddyTrckrRecipeTag}>
+              <Text style={styles.buddyTrckrRecipeTagText}>
+                Time: ~{item.time} min
+              </Text>
             </View>
           </View>
-          <TouchableOpacity
-            style={styles.buddyTrckrBookmarkButton}
-            onPress={() => toggleSavedRecipe(item.id)}
-            activeOpacity={0.8}
-          >
-            {saved ? (
-              <Image
-                source={require('../FishermansTrackerAssets/images/saved.png')}
-              />
-            ) : (
-              <Image
-                source={require('../FishermansTrackerAssets/images/save.png')}
-              />
-            )}
-          </TouchableOpacity>
+        </View>
+        <TouchableOpacity
+          style={styles.buddyTrckrBookmarkButton}
+          onPress={() => toggleSavedRecipe(item.id)}
+          activeOpacity={0.8}
+        >
+          {saved ? (
+            <Image
+              source={require('../FishermansTrackerAssets/images/saved.png')}
+            />
+          ) : (
+            <Image
+              source={require('../FishermansTrackerAssets/images/save.png')}
+            />
+          )}
         </TouchableOpacity>
-      );
+      </TouchableOpacity>
+    );
   };
 
   return (
@@ -445,6 +461,7 @@ const FishermansTrackerRecipes: React.FC = () => {
           visible={detailRecipe !== null}
           animationType="slide"
           onRequestClose={closeDetail}
+          statusBarTranslucent={Platform.OS === 'android'}
         >
           {detailRecipe && (
             <ImageBackground

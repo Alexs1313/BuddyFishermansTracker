@@ -137,7 +137,7 @@ const FishermansTrackerLocations: React.FC = () => {
       </View>
       <View style={styles.locationCardBody}>
         <Text style={styles.locationCardTitle} numberOfLines={1}>
-          {item.title}
+          {item.catches?.[0]?.title ?? item.title}
         </Text>
         <Text style={styles.locationCardDate}>{item.date}</Text>
       </View>

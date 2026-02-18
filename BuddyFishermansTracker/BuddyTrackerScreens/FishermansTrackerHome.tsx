@@ -34,28 +34,33 @@ const green = '#286E42';
 const blue = '#007083';
 
 const FishermansTrackerHome: React.FC = () => {
-  const navigation =
-    useNavigation<StackNavigationProp<StackList, 'FishermansTabsRoutes'>>();
+  const navigation = useNavigation();
   const [locations, setLocations] = useState<LocationItem[]>([]);
   const [savedRecipeIds, setSavedRecipeIds] = useState<string[]>([]);
   const [profileNickname, setProfileNickname] = useState<string | null>(null);
 
   const { setIsEnabledNotifications } = useStorage();
 
+  useFocusEffect(
+    useCallback(() => {
+      loadNotifications();
+    }, []),
+  );
+
   const loadNotifications = async () => {
     try {
       const notifValue = await AsyncStorage.getItem(NOTIFICATIONS_KEY);
+
       const parsedJSON = notifValue ? JSON.parse(notifValue) : null;
+
       if (typeof parsedJSON === 'boolean')
         setIsEnabledNotifications(parsedJSON);
-    } catch (err) {
-      if (__DEV__) {
-        console.warn('FishermansTrackerHome: loadNotifications failed!', err);
-      }
+    } catch {
+      console.log('catch err');
     }
   };
 
-  const fetchSavedData = async () => {
+  const loadData = async () => {
     try {
       const [locRaw, profileRaw, recipesRaw] = await Promise.all([
         AsyncStorage.getItem(LOCATIONS_STORAGE_KEY),
@@ -82,10 +87,7 @@ const FishermansTrackerHome: React.FC = () => {
       } else {
         setSavedRecipeIds([]);
       }
-    } catch (err) {
-      if (__DEV__) {
-        console.warn('FishermansTrackerHome: load SavedData failed', err);
-      }
+    } catch {
       setLocations([]);
       setSavedRecipeIds([]);
       setProfileNickname(null);
@@ -94,8 +96,7 @@ const FishermansTrackerHome: React.FC = () => {
 
   useFocusEffect(
     useCallback(() => {
-      loadNotifications();
-      fetchSavedData();
+      loadData();
     }, []),
   );
 
@@ -113,29 +114,35 @@ const FishermansTrackerHome: React.FC = () => {
     .slice(0, 2);
 
   const openProfile = () => {
-    navigation.navigate('FishermansTrackerProfile');
+    (navigation as { navigate: (s: string) => void }).navigate(
+      'FishermansTrackerProfile',
+    );
   };
 
   const openMap = () => {
-    navigation.navigate('FishermansTrackerMap');
+    (navigation as { navigate: (s: string) => void }).navigate(
+      'FishermansTrackerMap',
+    );
   };
 
   const openLocationsTab = () => {
-    navigation.navigate('FishermansTabsRoutes', {
-      screen: 'FishermansTrackerLocations',
-    });
+    (navigation as { navigate: (s: string) => void }).navigate(
+      'FishermansTrackerLocations',
+    );
   };
 
   const openRecipesTab = () => {
-    navigation.navigate('FishermansTabsRoutes', {
-      screen: 'FishermansTrackerRecipes',
-    });
+    (navigation as { navigate: (s: string) => void }).navigate(
+      'FishermansTrackerRecipes',
+    );
   };
 
   const openLocationDetail = (item: LocationItem) => {
-    navigation.navigate('FishermansTrackerLocationDetail', {
-      locationId: item.id,
-    });
+    (
+      navigation as {
+        navigate: (s: string, p: { locationId: string }) => void;
+      }
+    ).navigate('FishermansTrackerLocationDetail', { locationId: item.id });
   };
 
   return (
@@ -236,7 +243,7 @@ const FishermansTrackerHome: React.FC = () => {
                 </View>
                 <View style={styles.locationCardBody}>
                   <Text style={styles.locationCardTitle} numberOfLines={1}>
-                    {item.title}
+                    {item.catches?.[0]?.title ?? item.title}
                   </Text>
                   <Text style={styles.locationCardDate}>{item.date}</Text>
                 </View>

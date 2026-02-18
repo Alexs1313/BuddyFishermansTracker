@@ -72,6 +72,16 @@ const FishermansTrackerMap: React.FC = () => {
   const [weightUnit, setWeightUnit] = useState<'kg' | 'lb'>('kg');
   const { isEnabledNotifications } = useStorage();
 
+  useFocusEffect(
+    useCallback(() => {
+      if (Platform.OS === 'android') {
+        Orientation.lockToPortrait();
+      }
+
+      return () => Orientation.unlockAllOrientations();
+    }, []),
+  );
+
   const loadProfileUnit = async () => {
     try {
       const raw = await AsyncStorage.getItem(PROFILE_STORAGE_KEY);
@@ -88,14 +98,6 @@ const FishermansTrackerMap: React.FC = () => {
       setWeightUnit('kg');
     }
   };
-
-  useFocusEffect(
-    useCallback(() => {
-      loadProfileUnit();
-      Orientation.lockToPortrait();
-      return () => Orientation.unlockAllOrientations();
-    }, []),
-  );
 
   useEffect(() => {
     if (isSessionActive && sessionStartTime !== null) {
@@ -180,7 +182,8 @@ const FishermansTrackerMap: React.FC = () => {
     const totalSessionSeconds = Math.floor(
       (Date.now() - sessionStartTime) / 1000,
     );
-    const locationTitle = title.trim() || 'Title of place here';
+    const locationTitle =
+      catchTitle.trim() || title.trim() || 'Title of place here';
     try {
       const draftRaw = await AsyncStorage.getItem(MAP_DRAFT_KEY);
       const draft = draftRaw ? (JSON.parse(draftRaw) as MapDraft) : null;
@@ -194,6 +197,7 @@ const FishermansTrackerMap: React.FC = () => {
         if (idx !== -1) {
           list[idx] = {
             ...list[idx],
+            title: locationTitle,
             catches: nextCatches.length > 0 ? nextCatches : undefined,
             totalSessionSeconds,
           };
@@ -201,12 +205,14 @@ const FishermansTrackerMap: React.FC = () => {
             LOCATIONS_STORAGE_KEY,
             JSON.stringify(list),
           );
-          Toast.show({
-            type: 'success',
-            text1: 'Successfully saved',
-            position: 'top',
-            visibilityTime: 2000,
-          });
+          if (isEnabledNotifications) {
+            Toast.show({
+              type: 'success',
+              text1: 'Successfully saved',
+              position: 'top',
+              visibilityTime: 2000,
+            });
+          }
         }
       } else {
         const newLocation: LocationItem = {
@@ -231,12 +237,14 @@ const FishermansTrackerMap: React.FC = () => {
             sessionLocationId: newLocation.id,
           } as MapDraft),
         );
-        Toast.show({
-          type: 'success',
-          text1: 'Successfully saved',
-          position: 'top',
-          visibilityTime: 2000,
-        });
+        if (isEnabledNotifications) {
+          Toast.show({
+            type: 'success',
+            text1: 'Successfully saved',
+            position: 'top',
+            visibilityTime: 2000,
+          });
+        }
         return;
       }
 
@@ -251,12 +259,14 @@ const FishermansTrackerMap: React.FC = () => {
           sessionLocationId,
         } as MapDraft),
       );
-      Toast.show({
-        type: 'success',
-        text1: 'Successfully saved',
-        position: 'top',
-        visibilityTime: 2000,
-      });
+      if (isEnabledNotifications) {
+        Toast.show({
+          type: 'success',
+          text1: 'Successfully saved',
+          position: 'top',
+          visibilityTime: 2000,
+        });
+      }
     } catch (err) {
       if (__DEV__) {
         console.warn('FishermansTrackerMap: handleSaveCatch failed', err);
@@ -282,7 +292,10 @@ const FishermansTrackerMap: React.FC = () => {
           onPress={() => navigation.goBack()}
           activeOpacity={0.8}
         >
-          <Text style={styles.backButtonText}>← Back</Text>
+          <Image
+            source={require('../FishermansTrackerAssets/images/backArrow.png')}
+          />
+          <Text style={styles.backButtonText}>Back</Text>
         </TouchableOpacity>
         <Image
           source={require('../FishermansTrackerAssets/images/headerImg.png')}
@@ -359,6 +372,7 @@ const FishermansTrackerMap: React.FC = () => {
         transparent
         animationType="fade"
         onRequestClose={closeCatchModal}
+        statusBarTranslucent={Platform.OS === 'android'}
       >
         {Platform.OS === 'ios' && (
           <BlurView
@@ -537,6 +551,9 @@ const styles = StyleSheet.create({
     borderRadius: 60,
     borderWidth: 1,
     borderColor: '#fff',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
   },
   backButtonText: {
     fontSize: 16,
@@ -589,6 +606,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     justifyContent: 'space-between',
     gap: 12,
+    flexWrap: 'wrap',
   },
   titleInputFlex: {
     fontSize: 20,

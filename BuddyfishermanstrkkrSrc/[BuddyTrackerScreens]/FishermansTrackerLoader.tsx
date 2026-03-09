@@ -1,3 +1,6 @@
+// loading screen
+
+import type { StackNavigationProp } from '@react-navigation/stack';
 import { useNavigation } from '@react-navigation/native';
 import React, { useEffect, useRef } from 'react';
 import {
@@ -8,8 +11,8 @@ import {
   Platform,
   StyleSheet,
 } from 'react-native';
-import type { StackNavigationProp } from '@react-navigation/stack';
-import { StackList } from '../TrackerNavigation/FishermansStackRoutes';
+
+import { StackList } from '../../Fishermanstackkrouts';
 
 const FishermansTrackerLoader: React.FC = () => {
   const navigation =

@@ -1,3 +1,8 @@
+// profile creation screen - allows user to set nickname, choose unit and pick img
+
+import { launchImageLibrary } from 'react-native-image-picker';
+import type { StackNavigationProp } from '@react-navigation/stack';
+import { StackList } from '../../Fishermanstackkrouts';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import React, { useState } from 'react';
@@ -12,24 +17,25 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { launchImageLibrary } from 'react-native-image-picker';
-import type { StackNavigationProp } from '@react-navigation/stack';
-import { StackList } from '../TrackerNavigation/FishermansStackRoutes';
+
 import LinearGradient from 'react-native-linear-gradient';
 import { PROFILE_STORAGE_KEY } from '../fishermansUtils';
 
 const FishermansTrackerCreateProfile: React.FC = () => {
-  const [nickname, setNickname] = useState('');
-  const [unit, setUnit] = useState<'kg' | 'lb'>('kg');
-  const [avatarUri, setAvatarUri] = useState<string | null>(null);
+  const [buddyTrckrNickname, setBuddyTrckrNickname] = useState('');
+  const [buddyTrckrUnit, setBuddyTrckrUnit] = useState<'kg' | 'lb'>('kg');
+  const [buddyTrckrAvatarUri, setBuddyTrckrAvatarUri] = useState<string | null>(
+    null,
+  );
   const navigation =
     useNavigation<
       StackNavigationProp<StackList, 'FishermansTrackerCreateProfile'>
     >();
 
-  const isFormValid = nickname.trim().length > 0 && avatarUri !== null;
+  const buddyTrckrIsFormValid =
+    buddyTrckrNickname.trim().length > 0 && buddyTrckrAvatarUri !== null;
 
-  const handlePickImage = () => {
+  const buddyTrckrHandlePickImage = () => {
     launchImageLibrary(
       {
         mediaType: 'photo',
@@ -42,23 +48,27 @@ const FishermansTrackerCreateProfile: React.FC = () => {
           return;
         }
         const uri = response.assets?.[0]?.uri ?? null;
-        if (uri) setAvatarUri(uri);
+        if (uri) setBuddyTrckrAvatarUri(uri);
       },
     );
   };
 
-  const handleCreate = async () => {
-    if (!isFormValid) return;
+  const buddyTrckrHandleCreate = async () => {
+    if (!buddyTrckrIsFormValid) return;
     try {
       await AsyncStorage.setItem(
         PROFILE_STORAGE_KEY,
-        JSON.stringify({ nickname: nickname.trim(), unit, avatarUri }),
+        JSON.stringify({
+          nickname: buddyTrckrNickname.trim(),
+          unit: buddyTrckrUnit,
+          avatarUri: buddyTrckrAvatarUri,
+        }),
       );
     } catch (_) {}
     navigation.navigate('FishermansTabsRoutes');
   };
 
-  const handleSkip = () => {
+  const buddyTrckrHandleSkip = () => {
     navigation.navigate('FishermansTabsRoutes');
   };
 
@@ -72,30 +82,30 @@ const FishermansTrackerCreateProfile: React.FC = () => {
         showsVerticalScrollIndicator={false}
         bounces={false}
       >
-        <View style={styles.fshCnt}>
-          <View style={styles.headerFshCnt}>
+        <View style={styles.buddyTrckrFshCnt}>
+          <View style={styles.buddyTrckrHeaderFshCnt}>
             <Image
               source={require('../FishermansTrackerAssets/images/header.png')}
-              style={styles.header}
+              style={styles.buddyTrckrHeader}
             />
             <Image
               source={require('../FishermansTrackerAssets/images/headerImg.png')}
-              style={styles.headerImg}
+              style={styles.buddyTrckrHeaderImg}
             />
           </View>
 
-          <View style={styles.profileCard}>
-            <Text style={styles.headTtl}>Create profile</Text>
+          <View style={styles.buddyTrckrProfileCard}>
+            <Text style={styles.buddyTrckrHeadTtl}>Create profile</Text>
 
             <TouchableOpacity
-              style={styles.phPlaceholder}
+              style={styles.buddyTrckrPhPlaceholder}
               activeOpacity={0.8}
-              onPress={handlePickImage}
+              onPress={buddyTrckrHandlePickImage}
             >
-              {avatarUri ? (
+              {buddyTrckrAvatarUri ? (
                 <Image
-                  source={{ uri: avatarUri }}
-                  style={styles.avatarImg}
+                  source={{ uri: buddyTrckrAvatarUri }}
+                  style={styles.buddyTrckrAvatarImg}
                   resizeMode="cover"
                 />
               ) : (
@@ -106,69 +116,75 @@ const FishermansTrackerCreateProfile: React.FC = () => {
             </TouchableOpacity>
 
             <TextInput
-              style={styles.nicknameInput}
+              style={styles.buddyTrckrNicknameInput}
               placeholder="Nickname"
               placeholderTextColor="#FFFFFFB2"
-              value={nickname}
+              value={buddyTrckrNickname}
               maxLength={10}
-              onChangeText={setNickname}
+              onChangeText={setBuddyTrckrNickname}
             />
 
-            <View style={styles.unitWrr}>
+            <View style={styles.buddyTrckrUnitWrr}>
               <TouchableOpacity
                 style={[
-                  styles.unitOptn,
-                  unit === 'kg' && styles.unitOptnActive,
+                  styles.buddyTrckrUnitOptn,
+                  buddyTrckrUnit === 'kg' && styles.buddyTrckrUnitOptnActive,
                 ]}
-                onPress={() => setUnit('kg')}
+                onPress={() => setBuddyTrckrUnit('kg')}
                 activeOpacity={0.8}
               >
                 <View
                   style={[
-                    styles.radioButtn,
-                    unit === 'kg' && styles.radioActive,
+                    styles.buddyTrckrRadioButtn,
+                    buddyTrckrUnit === 'kg' && styles.buddyTrckrRadioActive,
                   ]}
                 />
-                <Text style={styles.unitLabelTxt}>Kg (Kilograms)</Text>
+                <Text style={styles.buddyTrckrUnitLabelTxt}>
+                  Kg (Kilograms)
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[
-                  styles.unitOptn,
-                  unit === 'lb' && styles.unitOptnActive,
+                  styles.buddyTrckrUnitOptn,
+                  buddyTrckrUnit === 'lb' && styles.buddyTrckrUnitOptnActive,
                 ]}
-                onPress={() => setUnit('lb')}
+                onPress={() => setBuddyTrckrUnit('lb')}
                 activeOpacity={0.8}
               >
                 <View
                   style={[
-                    styles.radioButtn,
-                    unit === 'lb' && styles.radioActive,
+                    styles.buddyTrckrRadioButtn,
+                    buddyTrckrUnit === 'lb' && styles.buddyTrckrRadioActive,
                   ]}
                 />
-                <Text style={styles.unitLabelTxt}>Lb (Pounds)</Text>
+                <Text style={styles.buddyTrckrUnitLabelTxt}>Lb (Pounds)</Text>
               </TouchableOpacity>
             </View>
 
             <TouchableOpacity
-              onPress={handleCreate}
+              onPress={buddyTrckrHandleCreate}
               activeOpacity={0.8}
-              style={styles.buttonContainer}
-              disabled={!isFormValid}
+              style={styles.buddyTrckrButtonContainer}
+              disabled={!buddyTrckrIsFormValid}
             >
               <LinearGradient
                 colors={
-                  isFormValid
+                  buddyTrckrIsFormValid
                     ? ['#A2E8D5', '#FFFAD0', '#2CCCE7']
                     : ['#97C5B8', '#97C5B8', '#97C5B8']
                 }
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
-                style={[styles.profbtn, !isFormValid && styles.buttonDisabled]}
+                style={[
+                  styles.buddyTrckrProfbtn,
+                  !buddyTrckrIsFormValid && styles.buddyTrckrButtonDisabled,
+                ]}
               >
                 <Text
                   style={[
-                    styles.profbtnTxt,
-                    !isFormValid && styles.buttonTextDisabled,
+                    styles.buddyTrckrProfbtnTxt,
+                    !buddyTrckrIsFormValid &&
+                      styles.buddyTrckrButtonTextDisabled,
                   ]}
                 >
                   Create
@@ -177,11 +193,11 @@ const FishermansTrackerCreateProfile: React.FC = () => {
             </TouchableOpacity>
 
             <TouchableOpacity
-              onPress={handleSkip}
+              onPress={buddyTrckrHandleSkip}
               activeOpacity={0.8}
-              style={styles.skipButton}
+              style={styles.buddyTrckrSkipButton}
             >
-              <Text style={styles.skipText}>Skip</Text>
+              <Text style={styles.buddyTrckrSkipText}>Skip</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -191,12 +207,12 @@ const FishermansTrackerCreateProfile: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  fshCnt: {
+  buddyTrckrFshCnt: {
     flex: 1,
     alignItems: 'center',
     paddingBottom: 20,
   },
-  profileCard: {
+  buddyTrckrProfileCard: {
     width: '90%',
     backgroundColor: '#286E42',
     borderRadius: 30,
@@ -205,28 +221,28 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#fff',
   },
-  headerImg: {
+  buddyTrckrHeaderImg: {
     position: 'absolute',
     right: 20,
     bottom: -10,
   },
-  headerFshCnt: {
+  buddyTrckrHeaderFshCnt: {
     width: '100%',
     marginBottom: 36,
   },
-  header: {
+  buddyTrckrHeader: {
     width: '100%',
     height: 156,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
   },
-  headTtl: {
+  buddyTrckrHeadTtl: {
     fontSize: 24,
     fontWeight: '700',
     color: '#fff',
     marginBottom: 20,
   },
-  phPlaceholder: {
+  buddyTrckrPhPlaceholder: {
     width: 142,
     height: 142,
     borderRadius: 70,
@@ -236,11 +252,11 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     marginBottom: 30,
   },
-  avatarImg: {
+  buddyTrckrAvatarImg: {
     width: '100%',
     height: '100%',
   },
-  nicknameInput: {
+  buddyTrckrNicknameInput: {
     width: '100%',
     paddingVertical: 16,
     backgroundColor: '#799930',
@@ -250,12 +266,12 @@ const styles = StyleSheet.create({
     color: '#fff',
     marginBottom: 16,
   },
-  unitWrr: {
+  buddyTrckrUnitWrr: {
     flexDirection: 'row',
     gap: 12,
     marginBottom: 24,
   },
-  unitOptn: {
+  buddyTrckrUnitOptn: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
@@ -265,52 +281,52 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
     gap: 8,
   },
-  unitOptnActive: {},
+  buddyTrckrUnitOptnActive: {},
 
-  radioButtn: {
+  buddyTrckrRadioButtn: {
     width: 20,
     height: 20,
     borderRadius: 10,
     borderWidth: 2,
     borderColor: '#fff',
   },
-  radioActive: {
+  buddyTrckrRadioActive: {
     backgroundColor: '#FF9F29',
     borderColor: '#fff',
   },
-  unitLabelTxt: {
+  buddyTrckrUnitLabelTxt: {
     fontSize: 12,
     color: '#fff',
     fontWeight: '500',
   },
-  buttonContainer: {
+  buddyTrckrButtonContainer: {
     width: '100%',
     marginBottom: 12,
   },
-  profbtn: {
+  buddyTrckrProfbtn: {
     width: '100%',
     height: 51,
     borderRadius: 60,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  profbtnTxt: {
+  buddyTrckrProfbtnTxt: {
     fontSize: 16,
     fontWeight: '500',
     color: '#007083',
   },
-  buttonDisabled: {
+  buddyTrckrButtonDisabled: {
     opacity: 0.7,
   },
-  buttonTextDisabled: {
+  buddyTrckrButtonTextDisabled: {
     color: '#657375',
   },
-  skipText: {
+  buddyTrckrSkipText: {
     fontSize: 16,
     color: '#fff',
     fontWeight: '500',
   },
-  skipButton: {
+  buddyTrckrSkipButton: {
     marginTop: 5,
   },
 });

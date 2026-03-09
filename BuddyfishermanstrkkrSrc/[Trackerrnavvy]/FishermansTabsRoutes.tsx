@@ -1,9 +1,9 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Image, StyleSheet, View } from 'react-native';
-import FishermansTrackerHome from '../BuddyTrackerScreens/FishermansTrackerHome';
-import FishermansTrackerLocations from '../BuddyTrackerScreens/FishermansTrackerLocations';
-import FishermansTrackerNotes from '../BuddyTrackerScreens/FishermansTrackerNotes';
-import FishermansTrackerRecipes from '../BuddyTrackerScreens/FishermansTrackerRecipes';
+import FishermansTrackerHome from '../[BuddyTrackerScreens]/FishermansTrackerHome';
+import FishermansTrackerLocations from '../[BuddyTrackerScreens]/FishermansTrackerLocations';
+import FishermansTrackerNotes from '../[BuddyTrackerScreens]/FishermansTrackerNotes';
+import FishermansTrackerRecipes from '../[BuddyTrackerScreens]/FishermansTrackerRecipes';
 
 const BottomTab = createBottomTabNavigator();
 

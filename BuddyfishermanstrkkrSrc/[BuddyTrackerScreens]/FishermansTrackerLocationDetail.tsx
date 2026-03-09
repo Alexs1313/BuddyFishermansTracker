@@ -1,3 +1,7 @@
+// location details screen - shows map, catches and session summary for a specific location
+
+import LinearGradient from 'react-native-linear-gradient';
+import type { LocationItem } from './FishermansTrackerLocations';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   useFocusEffect,
@@ -19,9 +23,8 @@ import {
 } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import type { StackNavigationProp } from '@react-navigation/stack';
-import { StackList } from '../TrackerNavigation/FishermansStackRoutes';
-import LinearGradient from 'react-native-linear-gradient';
-import type { LocationItem } from './FishermansTrackerLocations';
+import { StackList } from '../../Fishermanstackkrouts';
+
 import {
   LOCATIONS_STORAGE_KEY,
   PROFILE_STORAGE_KEY,
@@ -45,7 +48,7 @@ const FishermansTrackerLocationDetail: React.FC = () => {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [weightUnit, setWeightUnit] = useState<'kg' | 'lb'>('kg');
 
-  const loadProfileUnit = async () => {
+  const loadBuddyProfileUnit = async () => {
     try {
       const raw = await AsyncStorage.getItem(PROFILE_STORAGE_KEY);
       if (raw) {
@@ -65,7 +68,7 @@ const FishermansTrackerLocationDetail: React.FC = () => {
     }
   };
 
-  const loadLocation = async () => {
+  const loadBuddyFsrmnLocation = async () => {
     try {
       const raw = await AsyncStorage.getItem(LOCATIONS_STORAGE_KEY);
       if (raw) {
@@ -86,8 +89,8 @@ const FishermansTrackerLocationDetail: React.FC = () => {
 
   useFocusEffect(
     useCallback(() => {
-      loadProfileUnit();
-      loadLocation();
+      loadBuddyProfileUnit();
+      loadBuddyFsrmnLocation();
     }, [locationId]),
   );
 
@@ -122,7 +125,7 @@ const FishermansTrackerLocationDetail: React.FC = () => {
     }
   };
 
-  const handleBack = () => {
+  const handleBuddyFsrBack = () => {
     if (isSessionActive) {
       Alert.alert(
         'End Fishing Session?',
@@ -176,7 +179,7 @@ const FishermansTrackerLocationDetail: React.FC = () => {
           />
           <TouchableOpacity
             style={styles.backButtn}
-            onPress={handleBack}
+            onPress={handleBuddyFsrBack}
             activeOpacity={0.8}
           >
             <Image
@@ -248,8 +251,8 @@ const FishermansTrackerLocationDetail: React.FC = () => {
                             {index === 0
                               ? 'First fish caught'
                               : index === 1
-                                ? 'Second fish caught'
-                                : c.title}
+                              ? 'Second fish caught'
+                              : c.title}
                           </Text>
                           <Text style={styles.catchCardMeta} numberOfLines={1}>
                             {[c.species, c.equipment]

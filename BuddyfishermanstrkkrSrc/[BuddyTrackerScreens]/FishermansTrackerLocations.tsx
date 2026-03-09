@@ -1,3 +1,7 @@
+// locations list screen - shows all saved fishing spots, allows navigation to map and details, also allows deleting spots
+
+import { StackList } from '../../Fishermanstackkrouts';
+import { LOCATIONS_STORAGE_KEY, PROFILE_STORAGE_KEY } from '../fishermansUtils';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import React, { useCallback, useState } from 'react';
@@ -14,8 +18,6 @@ import {
 } from 'react-native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import LinearGradient from 'react-native-linear-gradient';
-import { StackList } from '../TrackerNavigation/FishermansStackRoutes';
-import { LOCATIONS_STORAGE_KEY, PROFILE_STORAGE_KEY } from '../fishermansUtils';
 
 export type CatchItem = {
   id: string;
@@ -43,7 +45,7 @@ const FishermansTrackerLocations: React.FC = () => {
   const [locations, setLocations] = useState<LocationItem[]>([]);
   const [profileNickname, setProfileNickname] = useState<string | null>(null);
 
-  const loadProfile = async () => {
+  const buddyFsrmnsLoadProfile = async () => {
     try {
       const raw = await AsyncStorage.getItem(PROFILE_STORAGE_KEY);
       if (raw) {
@@ -60,7 +62,7 @@ const FishermansTrackerLocations: React.FC = () => {
     }
   };
 
-  const loadLocations = async () => {
+  const buddyFsrmLoadLocations = async () => {
     try {
       const raw = await AsyncStorage.getItem(LOCATIONS_STORAGE_KEY);
       if (raw) {
@@ -77,12 +79,12 @@ const FishermansTrackerLocations: React.FC = () => {
 
   useFocusEffect(
     useCallback(() => {
-      loadLocations();
-      loadProfile();
+      buddyFsrmLoadLocations();
+      buddyFsrmnsLoadProfile();
     }, []),
   );
 
-  const openMap = () => {
+  const buddyFshOpenMap = () => {
     navigation.navigate('FishermansTrackerMap');
   };
 
@@ -92,7 +94,7 @@ const FishermansTrackerLocations: React.FC = () => {
     });
   };
 
-  const confirmDelete = (item: LocationItem) => {
+  const buddyFshConfirmDelete = (item: LocationItem) => {
     Alert.alert(
       'Delete This Spot?',
       'This location will be permanently removed from your map. Any notes linked to this spot will also be detached.',
@@ -128,7 +130,7 @@ const FishermansTrackerLocations: React.FC = () => {
       style={styles.locationCard}
       activeOpacity={0.9}
       onPress={() => openDetail(item)}
-      onLongPress={() => confirmDelete(item)}
+      onLongPress={() => buddyFshConfirmDelete(item)}
     >
       <View style={styles.locationCardIcon}>
         <Image
@@ -183,7 +185,7 @@ const FishermansTrackerLocations: React.FC = () => {
           </Text>
 
           <TouchableOpacity
-            onPress={openMap}
+            onPress={buddyFshOpenMap}
             activeOpacity={0.8}
             style={styles.openMapButtonContainer}
           >

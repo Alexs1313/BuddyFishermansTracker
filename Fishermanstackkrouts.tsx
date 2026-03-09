@@ -1,12 +1,15 @@
+// stack navigator
+
+import FishermansTrackerCreateProfile from './BuddyfishermanstrkkrSrc/[BuddyTrackerScreens]/FishermansTrackerCreateProfile';
+
+import FishermansTrackerLocationDetail from './BuddyfishermanstrkkrSrc/[BuddyTrackerScreens]/FishermansTrackerLocationDetail';
+import FishermansTrackerLoader from './BuddyfishermanstrkkrSrc/[BuddyTrackerScreens]/FishermansTrackerLoader';
+import FishermansTrackerMap from './BuddyfishermanstrkkrSrc/[BuddyTrackerScreens]/FishermansTrackerMap';
+import FishermansTrackerOnboard from './BuddyfishermanstrkkrSrc/[BuddyTrackerScreens]/FishermansTrackerOnboard';
+import FishermansTrackerProfile from './BuddyfishermanstrkkrSrc/[BuddyTrackerScreens]/FishermansTrackerProfile';
+import FishermansTabsRoutes from './BuddyfishermanstrkkrSrc/[Trackerrnavvy]/FishermansTabsRoutes';
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
-import FishermansTrackerCreateProfile from '../BuddyTrackerScreens/FishermansTrackerCreateProfile';
-import FishermansTrackerLocationDetail from '../BuddyTrackerScreens/FishermansTrackerLocationDetail';
-import FishermansTrackerLoader from '../BuddyTrackerScreens/FishermansTrackerLoader';
-import FishermansTrackerMap from '../BuddyTrackerScreens/FishermansTrackerMap';
-import FishermansTrackerOnboard from '../BuddyTrackerScreens/FishermansTrackerOnboard';
-import FishermansTrackerProfile from '../BuddyTrackerScreens/FishermansTrackerProfile';
-import FishermansTabsRoutes from './FishermansTabsRoutes';
 
 export type TabParamList = {
   FishermansTrackerHome: undefined;
@@ -27,7 +30,7 @@ export type StackList = {
 
 const NativeStack = createStackNavigator<StackList>();
 
-const FishermansStackRoutes: React.FC = () => {
+const Fishermanstackkrouts: React.FC = () => {
   return (
     <NativeStack.Navigator
       screenOptions={{ headerShown: false }}
@@ -65,4 +68,4 @@ const FishermansStackRoutes: React.FC = () => {
   );
 };
 
-export default FishermansStackRoutes;
+export default Fishermanstackkrouts;

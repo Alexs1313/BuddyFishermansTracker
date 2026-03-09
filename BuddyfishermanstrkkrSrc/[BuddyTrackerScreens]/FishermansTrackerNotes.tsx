@@ -1,3 +1,8 @@
+// notes screen - allows user to add notes about their fishing trips, save them to async storage, and share them with friends, also has a profile button that takes user to profile screen where they can set their nickname and other details
+
+import LinearGradient from 'react-native-linear-gradient';
+import Toast from 'react-native-toast-message';
+import { StackList } from '../../Fishermanstackkrouts';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BlurView } from '@react-native-community/blur';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
@@ -18,9 +23,7 @@ import {
   View,
   ScrollView,
 } from 'react-native';
-import LinearGradient from 'react-native-linear-gradient';
-import Toast from 'react-native-toast-message';
-import { StackList } from '../TrackerNavigation/FishermansStackRoutes';
+
 import {
   NOTES_STORAGE_KEY,
   PROFILE_STORAGE_KEY,
@@ -38,11 +41,11 @@ export type NoteItem = {
 const FishermansTrackerNotes: React.FC = () => {
   const navigation =
     useNavigation<StackNavigationProp<StackList, 'FishermansTabsRoutes'>>();
-  const [notes, setNotes] = useState<NoteItem[]>([]);
+  const [buddyFshNotes, setBuddyFshNotes] = useState<NoteItem[]>([]);
   const [profileNickname, setProfileNickname] = useState<string | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
-  const [title, setTitle] = useState('');
-  const [details, setDetails] = useState('');
+  const [buddyFshTitle, setBuddyFshTitle] = useState('');
+  const [buddyFshDetails, setBuddyFshDetails] = useState('');
 
   useFocusEffect(
     useCallback(() => {
@@ -54,7 +57,7 @@ const FishermansTrackerNotes: React.FC = () => {
     }, [modalVisible]),
   );
 
-  const loadProfile = async () => {
+  const buddyFshloadProfile = async () => {
     try {
       const raw = await AsyncStorage.getItem(PROFILE_STORAGE_KEY);
       if (raw) {
@@ -71,22 +74,22 @@ const FishermansTrackerNotes: React.FC = () => {
     }
   };
 
-  const loadNotes = async () => {
+  const buddyFshLoadNotes = async () => {
     try {
       const raw = await AsyncStorage.getItem(NOTES_STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw) as NoteItem[];
-        setNotes(Array.isArray(parsed) ? parsed : []);
+        setBuddyFshNotes(Array.isArray(parsed) ? parsed : []);
       }
     } catch (err) {
       if (__DEV__) {
         console.warn('FishermansTrackerNotes: loadNotes failed', err);
       }
-      setNotes([]);
+      setBuddyFshNotes([]);
     }
   };
 
-  const saveNotes = async (nextNotes: NoteItem[]) => {
+  const buddyFshSaveNotes = async (nextNotes: NoteItem[]) => {
     try {
       await AsyncStorage.setItem(NOTES_STORAGE_KEY, JSON.stringify(nextNotes));
     } catch (err) {
@@ -98,43 +101,43 @@ const FishermansTrackerNotes: React.FC = () => {
 
   useFocusEffect(
     useCallback(() => {
-      loadNotes();
-      loadProfile();
+      buddyFshLoadNotes();
+      buddyFshloadProfile();
     }, []),
   );
 
   const openAdd = () => {
-    setTitle('');
-    setDetails('');
+    setBuddyFshTitle('');
+    setBuddyFshDetails('');
     setModalVisible(true);
   };
 
   const closeModal = () => {
     setModalVisible(false);
-    setTitle('');
-    setDetails('');
+    setBuddyFshTitle('');
+    setBuddyFshDetails('');
   };
 
-  const handleShareNote = (note: NoteItem) => {
+  const buddyFshHandleShareNote = (note: NoteItem) => {
     const message = [note.title, note.date, note.details]
       .filter(Boolean)
       .join('\n\n');
     Share.share({ message, title: note.title });
   };
 
-  const handleSaveNote = () => {
-    const t = title.trim();
+  const buddyFshHandleSaveNote = () => {
+    const t = buddyFshTitle.trim();
     if (!t) return;
     const now = new Date();
     const newNote: NoteItem = {
       id: Date.now().toString(),
       title: t,
-      details: details.trim(),
+      details: buddyFshDetails.trim(),
       date: formatDate(now),
     };
-    setNotes(prev => {
+    setBuddyFshNotes(prev => {
       const next = [newNote, ...prev];
-      saveNotes(next).then(() => {
+      buddyFshSaveNotes(next).then(() => {
         Toast.show({
           type: 'success',
           text1: 'Note successfully saved!',
@@ -147,16 +150,16 @@ const FishermansTrackerNotes: React.FC = () => {
     closeModal();
   };
 
-  const confirmDelete = (id: string) => {
+  const buddyFshConfirmDelete = (id: string) => {
     Alert.alert('Remove Note?', 'This action cannot be undone', [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Delete',
         style: 'destructive',
         onPress: () => {
-          setNotes(prev => {
+          setBuddyFshNotes(prev => {
             const next = prev.filter(n => n.id !== id);
-            saveNotes(next);
+            buddyFshSaveNotes(next);
             return next;
           });
         },
@@ -168,7 +171,7 @@ const FishermansTrackerNotes: React.FC = () => {
     <View style={styles.noteCard}>
       <TouchableOpacity
         style={styles.noteCardArrow}
-        onPress={() => handleShareNote(item)}
+        onPress={() => buddyFshHandleShareNote(item)}
         activeOpacity={0.8}
       >
         <Image
@@ -178,7 +181,7 @@ const FishermansTrackerNotes: React.FC = () => {
       </TouchableOpacity>
       <TouchableOpacity
         activeOpacity={1}
-        onLongPress={() => confirmDelete(item.id)}
+        onLongPress={() => buddyFshConfirmDelete(item.id)}
         style={styles.noteCardContent}
       >
         <Text style={styles.noteCardTitle} numberOfLines={1}>
@@ -247,7 +250,7 @@ const FishermansTrackerNotes: React.FC = () => {
 
           <View style={styles.listGradient}>
             <FlatList
-              data={notes}
+              data={buddyFshNotes}
               renderItem={renderNoteCard}
               scrollEnabled={false}
               keyExtractor={item => item.id}
@@ -292,26 +295,26 @@ const FishermansTrackerNotes: React.FC = () => {
                 style={styles.modalInput}
                 placeholder="What would you call today's adventure?"
                 placeholderTextColor="#FFFFFF80"
-                value={title}
-                onChangeText={setTitle}
+                value={buddyFshTitle}
+                onChangeText={setBuddyFshTitle}
               />
               <TextInput
                 style={[styles.modalInput, styles.modalInputMultiline]}
                 placeholder="Note down details you'd like to remember for next time..."
                 placeholderTextColor="#FFFFFF80"
-                value={details}
-                onChangeText={setDetails}
+                value={buddyFshDetails}
+                onChangeText={setBuddyFshDetails}
                 multiline
               />
               <TouchableOpacity
-                onPress={handleSaveNote}
+                onPress={buddyFshHandleSaveNote}
                 activeOpacity={0.8}
                 style={styles.saveButtonContainer}
-                disabled={!title.trim()}
+                disabled={!buddyFshTitle.trim()}
               >
                 <LinearGradient
                   colors={
-                    title.trim()
+                    buddyFshTitle.trim()
                       ? ['#A2E8D5', '#FFFAD0', '#2CCCE7']
                       : ['#97C5B8', '#97C5B8']
                   }
@@ -322,7 +325,7 @@ const FishermansTrackerNotes: React.FC = () => {
                   <Text
                     style={[
                       styles.saveButtonText,
-                      !title.trim() && styles.buttonTextDisabled,
+                      !buddyFshTitle.trim() && styles.buttonTextDisabled,
                     ]}
                   >
                     Save Note

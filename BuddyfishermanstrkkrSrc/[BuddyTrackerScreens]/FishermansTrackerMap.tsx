@@ -1,5 +1,12 @@
+// main map screen - allows user to set location, add catches with details and photos, start/end fishing session, also has timer and saves data to async storage
+
+import Toast from 'react-native-toast-message';
+import { useStorage } from '../FishermansStore/fishermansContxt';
+import Orientation from 'react-native-orientation-locker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import { useNavigation } from '@react-navigation/native';
+
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Image,
@@ -15,17 +22,16 @@ import {
 import MapView, { Marker } from 'react-native-maps';
 import { launchImageLibrary } from 'react-native-image-picker';
 import type { StackNavigationProp } from '@react-navigation/stack';
-import { StackList } from '../TrackerNavigation/FishermansStackRoutes';
+import { StackList } from '../../Fishermanstackkrouts';
+
 import LinearGradient from 'react-native-linear-gradient';
 import type { CatchItem, LocationItem } from './FishermansTrackerLocations';
 import { BlurView } from '@react-native-community/blur';
+
 import { useFocusEffect } from '@react-navigation/native';
-import Toast from 'react-native-toast-message';
-import { useStorage } from '../FishermansStore/fishermansContxt';
-import Orientation from 'react-native-orientation-locker';
+
 import {
   LOCATIONS_STORAGE_KEY,
-  PROFILE_STORAGE_KEY,
   MAP_DRAFT_KEY,
   formatDate,
   formatTimer,
@@ -82,23 +88,6 @@ const FishermansTrackerMap: React.FC = () => {
     }, []),
   );
 
-  const loadProfileUnit = async () => {
-    try {
-      const raw = await AsyncStorage.getItem(PROFILE_STORAGE_KEY);
-      if (raw) {
-        const data = JSON.parse(raw) as { unit?: string };
-        setWeightUnit(data.unit === 'lb' ? 'lb' : 'kg');
-      } else {
-        setWeightUnit('kg');
-      }
-    } catch (err) {
-      if (__DEV__) {
-        console.warn('FishermansTrackerMap: loadProfileUnit failed', err);
-      }
-      setWeightUnit('kg');
-    }
-  };
-
   useEffect(() => {
     if (isSessionActive && sessionStartTime !== null) {
       timerRef.current = setInterval(() => {
@@ -113,14 +102,14 @@ const FishermansTrackerMap: React.FC = () => {
     };
   }, [isSessionActive, sessionStartTime]);
 
-  const handleStartFishing = () => {
+  const buddyFshHandleStartFishing = () => {
     setSessionActive(true);
     setSessionStartTime(Date.now());
     setTimerSeconds(0);
     setPendingCatches([]);
   };
 
-  const handleEndFishing = async () => {
+  const buddyFshHandleEndFishing = async () => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
@@ -150,7 +139,7 @@ const FishermansTrackerMap: React.FC = () => {
 
   const closeCatchModal = () => setCatchModalVisible(false);
 
-  const handlePickCatchImage = () => {
+  const buddyFshHandlePickCatchImage = () => {
     launchImageLibrary(
       { mediaType: 'photo', includeBase64: false },
       response => {
@@ -161,7 +150,7 @@ const FishermansTrackerMap: React.FC = () => {
     );
   };
 
-  const handleSaveCatch = async () => {
+  const buddyFshHandleSaveCatch = async () => {
     const newCatch: CatchItem = {
       id: Date.now().toString(),
       title: catchTitle.trim() || 'Catch',
@@ -343,7 +332,7 @@ const FishermansTrackerMap: React.FC = () => {
         </View>
         {!isSessionActive ? (
           <TouchableOpacity
-            onPress={handleStartFishing}
+            onPress={buddyFshHandleStartFishing}
             activeOpacity={0.8}
             style={styles.startButtonContainer}
           >
@@ -359,7 +348,7 @@ const FishermansTrackerMap: React.FC = () => {
         ) : (
           <TouchableOpacity
             style={styles.endButton}
-            onPress={handleEndFishing}
+            onPress={buddyFshHandleEndFishing}
             activeOpacity={0.8}
           >
             <Text style={styles.endButtonText}>End fishing</Text>
@@ -401,7 +390,7 @@ const FishermansTrackerMap: React.FC = () => {
 
             <TouchableOpacity
               style={styles.catchImageCircle}
-              onPress={handlePickCatchImage}
+              onPress={buddyFshHandlePickCatchImage}
               activeOpacity={0.8}
             >
               {catchImageUri ? (
@@ -474,7 +463,9 @@ const FishermansTrackerMap: React.FC = () => {
                 catchEquipment.trim() !== '';
               return (
                 <TouchableOpacity
-                  onPress={isCatchFormValid ? handleSaveCatch : undefined}
+                  onPress={
+                    isCatchFormValid ? buddyFshHandleSaveCatch : undefined
+                  }
                   activeOpacity={0.8}
                   disabled={!isCatchFormValid}
                   style={[

@@ -1,3 +1,10 @@
+// profile screen - allows user to set their nickname, choose between kg and lb for weight units, and upload a profile picture, also has a toggle for notifications and a button to share the app with friends, all data is saved to async storage and loaded on app start
+
+import { StackList } from '../../Fishermanstackkrouts';
+import LinearGradient from 'react-native-linear-gradient';
+
+import { useStorage } from '../FishermansStore/fishermansContxt';
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
@@ -6,7 +13,6 @@ import {
   Image,
   ImageBackground,
   ScrollView,
-  Share,
   Switch,
   StyleSheet,
   Text,
@@ -18,9 +24,7 @@ import {
 } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import type { StackNavigationProp } from '@react-navigation/stack';
-import { StackList } from '../TrackerNavigation/FishermansStackRoutes';
-import LinearGradient from 'react-native-linear-gradient';
-import { useStorage } from '../FishermansStore/fishermansContxt';
+
 import Toast from 'react-native-toast-message';
 import {
   PROFILE_STORAGE_KEY,
@@ -40,13 +44,13 @@ type ProfileData = {
 const FishermansTrackerProfile: React.FC = () => {
   const navigation =
     useNavigation<StackNavigationProp<StackList, 'FishermansTrackerProfile'>>();
-  const [nickname, setNickname] = useState('');
-  const [unit, setUnit] = useState<'kg' | 'lb'>('kg');
+  const [buddyFsNickname, setBuddyFsNickname] = useState('');
+  const [buddyFshunit, setBuddyFshunit] = useState<'kg' | 'lb'>('kg');
   const [avatarUri, setAvatarUri] = useState<string | null>(null);
   const [initialData, setInitialData] = useState<ProfileData | null>(null);
   const { isEnabledNotifications, setIsEnabledNotifications } = useStorage();
 
-  const toggleNotifications = async (value: boolean) => {
+  const buddyFshToggleNotifications = async (value: boolean) => {
     Toast.show({
       type: 'success',
       text1: `Notifications ${value ? 'enabled' : 'disabled'}`,
@@ -69,13 +73,13 @@ const FishermansTrackerProfile: React.FC = () => {
 
   const hasChanges = Boolean(
     initialData &&
-      ((nickname.trim() || 'there') !==
+      ((buddyFsNickname.trim() || 'there') !==
         (initialData.nickname?.trim() || 'there') ||
-        unit !== initialData.unit ||
+        buddyFshunit !== initialData.unit ||
         avatarUri !== initialData.avatarUri),
   );
 
-  const loadProfile = async () => {
+  const buddyFshloadProfile = async () => {
     try {
       const raw = await AsyncStorage.getItem(PROFILE_STORAGE_KEY);
       if (raw) {
@@ -85,13 +89,13 @@ const FishermansTrackerProfile: React.FC = () => {
           unit: data.unit === 'lb' ? 'lb' : 'kg',
           avatarUri: data.avatarUri ?? null,
         };
-        setNickname(loaded.nickname);
-        setUnit(loaded.unit);
+        setBuddyFsNickname(loaded.nickname);
+        setBuddyFshunit(loaded.unit);
         setAvatarUri(loaded.avatarUri);
         setInitialData(loaded);
       } else {
-        setNickname('');
-        setUnit('kg');
+        setBuddyFsNickname('');
+        setBuddyFshunit('kg');
         setAvatarUri(null);
         setInitialData({ nickname: '', unit: 'kg', avatarUri: null });
       }
@@ -99,15 +103,15 @@ const FishermansTrackerProfile: React.FC = () => {
       if (__DEV__) {
         console.warn('FishermansTrackerProfile: loadProfile failed', err);
       }
-      setNickname('');
-      setUnit('kg');
+      setBuddyFsNickname('');
+      setBuddyFshunit('kg');
       setAvatarUri(null);
       setInitialData({ nickname: '', unit: 'kg', avatarUri: null });
     }
   };
 
   useEffect(() => {
-    loadProfile();
+    buddyFshloadProfile();
   }, []);
 
   const handlePickImage = () => {
@@ -128,13 +132,13 @@ const FishermansTrackerProfile: React.FC = () => {
     );
   };
 
-  const handleSave = async () => {
+  const buddyFshhandleSave = async () => {
     try {
       await AsyncStorage.setItem(
         PROFILE_STORAGE_KEY,
         JSON.stringify({
-          nickname: nickname.trim() || 'there',
-          unit,
+          nickname: buddyFsNickname.trim() || 'there',
+          unit: buddyFshunit,
           avatarUri,
         }),
       );
@@ -187,10 +191,10 @@ const FishermansTrackerProfile: React.FC = () => {
   return (
     <ImageBackground
       source={require('../FishermansTrackerAssets/images/mainbg.png')}
-      style={styles.container}
+      style={styles.buddyFshcontainer}
     >
       <ScrollView
-        style={styles.scroll}
+        style={styles.buddyFshcScrll}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         bounces={false}
@@ -241,8 +245,8 @@ const FishermansTrackerProfile: React.FC = () => {
               style={styles.input}
               placeholder="Name"
               placeholderTextColor="#FFFFFFB2"
-              value={nickname}
-              onChangeText={setNickname}
+              value={buddyFsNickname}
+              onChangeText={setBuddyFsNickname}
               maxLength={10}
             />
 
@@ -250,33 +254,39 @@ const FishermansTrackerProfile: React.FC = () => {
               <TouchableOpacity
                 style={[
                   styles.unitOption,
-                  unit === 'kg' && styles.unitOptionActive,
+                  buddyFshunit === 'kg' && styles.unitOptionActive,
                 ]}
-                onPress={() => setUnit('kg')}
+                onPress={() => setBuddyFshunit('kg')}
                 activeOpacity={0.8}
               >
                 <View
-                  style={[styles.radio, unit === 'kg' && styles.radioActive]}
+                  style={[
+                    styles.radio,
+                    buddyFshunit === 'kg' && styles.radioActive,
+                  ]}
                 />
                 <Text style={styles.unitLabel}>Kg (Kilograms)</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[
                   styles.unitOption,
-                  unit === 'lb' && styles.unitOptionActive,
+                  buddyFshunit === 'lb' && styles.unitOptionActive,
                 ]}
-                onPress={() => setUnit('lb')}
+                onPress={() => setBuddyFshunit('lb')}
                 activeOpacity={0.8}
               >
                 <View
-                  style={[styles.radio, unit === 'lb' && styles.radioActive]}
+                  style={[
+                    styles.radio,
+                    buddyFshunit === 'lb' && styles.radioActive,
+                  ]}
                 />
                 <Text style={styles.unitLabel}>Lb (Pounds)</Text>
               </TouchableOpacity>
             </View>
 
             <TouchableOpacity
-              onPress={hasChanges ? handleSave : undefined}
+              onPress={hasChanges ? buddyFshhandleSave : undefined}
               activeOpacity={0.8}
               style={styles.saveButtonContainer}
               disabled={!hasChanges}
@@ -316,7 +326,7 @@ const FishermansTrackerProfile: React.FC = () => {
               <Text style={styles.settingsRowText}>Notifications</Text>
               <Switch
                 value={isEnabledNotifications}
-                onValueChange={value => toggleNotifications(value)}
+                onValueChange={value => buddyFshToggleNotifications(value)}
                 trackColor={{ false: '#ccc', true: '#FF9F29' }}
                 thumbColor="#fff"
               />
@@ -364,7 +374,7 @@ const FishermansTrackerProfile: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
+  buddyFshcontainer: {
     flex: 1,
   },
   headerContainer: {
@@ -401,7 +411,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#fff',
   },
-  scroll: {
+  buddyFshcScrll: {
     flex: 1,
   },
   scrollContent: {

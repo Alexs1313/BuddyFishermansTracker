@@ -1,4 +1,8 @@
+// onboarding screens - shows 3 screens with info about the app and a button to continue to the next screen, also has pagination dots at the bottom to indicate which screen is currently active
+import { StackList } from '../../Fishermanstackkrouts';
+import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
+
 import React, { useState } from 'react';
 import {
   Image,
@@ -11,9 +15,8 @@ import {
   View,
 } from 'react-native';
 import type { ImageSourcePropType } from 'react-native';
+
 import type { StackNavigationProp } from '@react-navigation/stack';
-import { StackList } from '../TrackerNavigation/FishermansStackRoutes';
-import LinearGradient from 'react-native-linear-gradient';
 
 const bGradients = ['#A2E8D5', '#FFFAD0', '#2CCCE7'];
 const bGradStart = { x: 0, y: 0 };
@@ -67,7 +70,7 @@ const FishermansTrackerOnboard: React.FC = () => {
   const buttonWidth = Math.min(scrnWidth * 0.9, 420);
   const bottomPadding = Math.max(24, Math.min(55, 55 * sc));
 
-  const handleNextBoard = () => {
+  const buddyFshrhandleNextBoard = () => {
     setCurrentIndex(prev => {
       const next = prev + 1;
       if (next > 2) navigation.navigate('FishermansTrackerCreateProfile');
@@ -119,7 +122,7 @@ const FishermansTrackerOnboard: React.FC = () => {
           </View>
 
           <TouchableOpacity
-            onPress={handleNextBoard}
+            onPress={buddyFshrhandleNextBoard}
             activeOpacity={0.8}
             style={[
               styles.buttonContainer,

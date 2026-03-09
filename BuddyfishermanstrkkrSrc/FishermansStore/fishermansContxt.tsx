@@ -1,3 +1,5 @@
+// context for storing global state related to the app, such as whether notifications are enabled or not, and any other settings that might be added in the future, also provides a provider component that wraps the app and allows access to the context values from any component in the app
+
 import React, {
   createContext,
   useContext,

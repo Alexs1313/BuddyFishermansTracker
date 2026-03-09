@@ -1,8 +1,5 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import React, { useCallback, useState } from 'react';
-import type { StackNavigationProp } from '@react-navigation/stack';
-import Toast from 'react-native-toast-message';
+// recipes screen - shows a list of recipes for different types of fish, user can save their favorite recipes, view recipe details, and share recipes with friends, also has a profile button that takes user to profile screen where they can set their nickname and other details
+
 import {
   FlatList,
   Image,
@@ -17,7 +14,15 @@ import {
   View,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import { StackList } from '../TrackerNavigation/FishermansStackRoutes';
+import { StackList } from '../../Fishermanstackkrouts';
+
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import React, { useCallback, useState } from 'react';
+import type { StackNavigationProp } from '@react-navigation/stack';
+import Toast from 'react-native-toast-message';
+
 import {
   PROFILE_STORAGE_KEY,
   SAVED_RECIPES_KEY,

@@ -152,7 +152,7 @@ const FishermansTrackerProfile: React.FC = () => {
 
   const handleShareApp = () => {
     Linking.openURL(
-      'https://apps.apple.com/us/app/the-fisherman-buddy-tracker/id6759281802',
+      'https://apps.apple.com/us/app/the-fisherman-buddy-tracker/id6760306838',
     );
   };
 

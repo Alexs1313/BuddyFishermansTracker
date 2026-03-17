@@ -1,7 +1,7 @@
 // location details screen - shows map, catches and session summary for a specific location
 
 import LinearGradient from 'react-native-linear-gradient';
-import type { LocationItem } from './FishermansTrackerLocations';
+import type { LocationItem } from './ThebudyyTrackerLocations';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   useFocusEffect,
@@ -23,7 +23,7 @@ import {
 } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import type { StackNavigationProp } from '@react-navigation/stack';
-import { StackList } from '../../Fishermanstackkrouts';
+import { StackList } from '../../Stackkrouts';
 
 import {
   LOCATIONS_STORAGE_KEY,
@@ -32,24 +32,24 @@ import {
   totalWeightKg,
 } from '../fishermansUtils';
 
-type DetailRoute = RouteProp<StackList, 'FishermansTrackerLocationDetail'>;
+type DetailRoute = RouteProp<StackList, 'ThebudyyTrackerLocationDetail'>;
 
-const FishermansTrackerLocationDetail: React.FC = () => {
+const ThebudyyTrackerLocationDetail: React.FC = () => {
   const buddyTrckrNavigation =
     useNavigation<
-      StackNavigationProp<StackList, 'FishermansTrackerLocationDetail'>
+      StackNavigationProp<StackList, 'ThebudyyTrackerLocationDetail'>
     >();
   const buddyTrckrRoute = useRoute<DetailRoute>();
   const { locationId: buddyTrckrLocationId } = buddyTrckrRoute.params;
 
   const [buddyTrckrLocation, setBuddyTrckrLocation] =
     useState<LocationItem | null>(null);
-  const [buddyTrckrIsSessionActive, setBuddyTrckrSessionActive] =
+  const [buddyTrckrIsSessionActive, _setBuddyTrckrSessionActive] =
     useState(false);
-  const [buddyTrckrSessionStartTime, setBuddyTrckrSessionStartTime] = useState<
+  const [buddyTrckrSessionStartTime, _setBuddyTrckrSessionStartTime] = useState<
     number | null
   >(null);
-  const [buddyTrckrTimerSeconds, setBuddyTrckrTimerSeconds] = useState(0);
+  const [_buddyTrckrTimerSeconds, _setBuddyTrckrTimerSeconds] = useState(0);
   const buddyTrckrTimerRef = useRef<ReturnType<typeof setInterval> | null>(
     null,
   );
@@ -77,7 +77,7 @@ const FishermansTrackerLocationDetail: React.FC = () => {
     }
   };
 
-  const buddyTrckrLoadBuddyFsrmnLocation = async () => {
+  const buddyTrckrLoadBuddyFsrmnLocation = useCallback(async () => {
     try {
       const buddyTrckrRaw = await AsyncStorage.getItem(LOCATIONS_STORAGE_KEY);
       if (buddyTrckrRaw) {
@@ -96,19 +96,19 @@ const FishermansTrackerLocationDetail: React.FC = () => {
       }
       setBuddyTrckrLocation(null);
     }
-  };
+  }, [buddyTrckrLocationId]);
 
   useFocusEffect(
     useCallback(() => {
       buddyTrckrLoadBuddyProfileUnit();
       buddyTrckrLoadBuddyFsrmnLocation();
-    }, [buddyTrckrLocationId]),
+    }, [buddyTrckrLoadBuddyFsrmnLocation]),
   );
 
   useEffect(() => {
     if (buddyTrckrIsSessionActive && buddyTrckrSessionStartTime !== null) {
       buddyTrckrTimerRef.current = setInterval(() => {
-        setBuddyTrckrTimerSeconds(
+        _setBuddyTrckrTimerSeconds(
           Math.floor((Date.now() - buddyTrckrSessionStartTime) / 1000),
         );
       }, 1000);
@@ -122,31 +122,7 @@ const FishermansTrackerLocationDetail: React.FC = () => {
     };
   }, [buddyTrckrIsSessionActive, buddyTrckrSessionStartTime]);
 
-  const buddyTrckrSaveLocation = async (buddyTrckrUpdated: LocationItem) => {
-    setBuddyTrckrLocation(buddyTrckrUpdated);
-    try {
-      const buddyTrckrRaw = await AsyncStorage.getItem(LOCATIONS_STORAGE_KEY);
-      const buddyTrckrList = buddyTrckrRaw
-        ? (JSON.parse(buddyTrckrRaw) as LocationItem[])
-        : [];
-      const buddyTrckrNext = buddyTrckrList.map(buddyTrckrItem =>
-        buddyTrckrItem.id === buddyTrckrUpdated.id
-          ? buddyTrckrUpdated
-          : buddyTrckrItem,
-      );
-      await AsyncStorage.setItem(
-        LOCATIONS_STORAGE_KEY,
-        JSON.stringify(buddyTrckrNext),
-      );
-    } catch (buddyTrckrErr) {
-      if (__DEV__) {
-        console.warn(
-          'FishermansTrackerLocationDetail: saveLocation failed',
-          buddyTrckrErr,
-        );
-      }
-    }
-  };
+  // (saveLocation helper removed; not used)
 
   const buddyTrckrHandleBuddyFsrBack = () => {
     if (buddyTrckrIsSessionActive) {
@@ -766,4 +742,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default FishermansTrackerLocationDetail;
+export default ThebudyyTrackerLocationDetail;

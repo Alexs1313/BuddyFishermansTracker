@@ -1,6 +1,6 @@
 // locations list screen - shows all saved fishing spots, allows navigation to map and details, also allows deleting spots
 
-import { StackList } from '../../Fishermanstackkrouts';
+import { StackList } from '../../Stackkrouts';
 import { LOCATIONS_STORAGE_KEY, PROFILE_STORAGE_KEY } from '../fishermansUtils';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
@@ -39,15 +39,37 @@ export type LocationItem = {
   totalSessionSeconds?: number;
 };
 
-const FishermansTrackerLocations: React.FC = () => {
+const ThebudyyTrackerLocations: React.FC = () => {
   const buddyTrckrNavigation =
-    useNavigation<StackNavigationProp<StackList, 'FishermansTabsRoutes'>>();
+    useNavigation<StackNavigationProp<StackList, 'Bottomtabsroutes'>>();
   const [buddyTrckrLocations, setBuddyTrckrLocations] = useState<
     LocationItem[]
   >([]);
   const [buddyTrckrProfileNickname, setBuddyTrckrProfileNickname] = useState<
     string | null
   >(null);
+
+  const buddyTrckrDemoLocations: LocationItem[] = [
+    {
+      id: 'demo-location-1',
+      title: 'Sunny Riverside Bend',
+      date: 'Mar 12, 2026',
+      latitude: 45.5123,
+      longitude: -0.4987,
+    },
+    {
+      id: 'demo-location-2',
+      title: 'Quiet Lake Point',
+      date: 'Mar 05, 2026',
+      latitude: 45.4871,
+      longitude: -0.5214,
+    },
+  ];
+
+  const buddyTrckrShowDemoLocations = buddyTrckrLocations.length === 0;
+  const buddyTrckrDisplayedLocations = buddyTrckrShowDemoLocations
+    ? buddyTrckrDemoLocations
+    : buddyTrckrLocations;
 
   const buddyTrckrLoadProfile = async () => {
     try {
@@ -101,11 +123,11 @@ const FishermansTrackerLocations: React.FC = () => {
   );
 
   const buddyTrckrOpenMap = () => {
-    buddyTrckrNavigation.navigate('FishermansTrackerMap');
+    buddyTrckrNavigation.navigate('ThebudyyTrackerMap');
   };
 
   const buddyTrckrOpenDetail = (buddyTrckrItem: LocationItem) => {
-    buddyTrckrNavigation.navigate('FishermansTrackerLocationDetail', {
+    buddyTrckrNavigation.navigate('ThebudyyTrackerLocationDetail', {
       locationId: buddyTrckrItem.id,
     });
   };
@@ -152,8 +174,16 @@ const FishermansTrackerLocations: React.FC = () => {
     <TouchableOpacity
       style={styles.buddyTrckrLocationCard}
       activeOpacity={0.9}
-      onPress={() => buddyTrckrOpenDetail(buddyTrckrItem)}
-      onLongPress={() => buddyTrckrConfirmDelete(buddyTrckrItem)}
+      onPress={
+        buddyTrckrShowDemoLocations
+          ? buddyTrckrOpenMap
+          : () => buddyTrckrOpenDetail(buddyTrckrItem)
+      }
+      onLongPress={
+        buddyTrckrShowDemoLocations
+          ? undefined
+          : () => buddyTrckrConfirmDelete(buddyTrckrItem)
+      }
     >
       <View style={styles.buddyTrckrLocationCardIcon}>
         <Image
@@ -190,7 +220,7 @@ const FishermansTrackerLocations: React.FC = () => {
             style={styles.buddyTrckrProfileButton}
             activeOpacity={0.8}
             onPress={() =>
-              buddyTrckrNavigation.navigate('FishermansTrackerProfile')
+              buddyTrckrNavigation.navigate('ThebudyyTrackerProfile')
             }
           >
             <Image
@@ -227,7 +257,7 @@ const FishermansTrackerLocations: React.FC = () => {
           </TouchableOpacity>
 
           <FlatList
-            data={buddyTrckrLocations}
+            data={buddyTrckrDisplayedLocations}
             scrollEnabled={false}
             renderItem={buddyTrckrRenderLocationCard}
             keyExtractor={buddyTrckrItem => buddyTrckrItem.id}
@@ -340,4 +370,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default FishermansTrackerLocations;
+export default ThebudyyTrackerLocations;

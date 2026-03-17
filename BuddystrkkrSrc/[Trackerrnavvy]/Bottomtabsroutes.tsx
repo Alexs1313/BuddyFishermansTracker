@@ -1,13 +1,13 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Image, StyleSheet, View } from 'react-native';
-import FishermansTrackerHome from '../[BuddyTrackerScreens]/FishermansTrackerHome';
-import FishermansTrackerLocations from '../[BuddyTrackerScreens]/FishermansTrackerLocations';
-import FishermansTrackerNotes from '../[BuddyTrackerScreens]/FishermansTrackerNotes';
-import FishermansTrackerRecipes from '../[BuddyTrackerScreens]/FishermansTrackerRecipes';
+import { Image, StyleSheet } from 'react-native';
+import ThebudyyTrackerHome from '../[BuddyTrackerScreens]/ThebudyyTrackerHome';
+import ThebudyyTrackerLocations from '../[BuddyTrackerScreens]/ThebudyyTrackerLocations';
+import ThebudyyTrackerNotes from '../[BuddyTrackerScreens]/ThebudyyTrackerNotes';
+import ThebudyyTrackerRecipes from '../[BuddyTrackerScreens]/ThebudyyTrackerRecipes';
 
 const BottomTab = createBottomTabNavigator();
 
-const FishermansTabsRoutes = () => {
+const Bottomtabsroutes = () => {
   return (
     <BottomTab.Navigator
       screenOptions={{
@@ -20,8 +20,8 @@ const FishermansTabsRoutes = () => {
       }}
     >
       <BottomTab.Screen
-        name="FishermansTrackerHome"
-        component={FishermansTrackerHome}
+        name="ThebudyyTrackerHome"
+        component={ThebudyyTrackerHome}
         options={{
           tabBarLabel: 'Home',
           tabBarIcon: ({ color }) => (
@@ -33,8 +33,8 @@ const FishermansTabsRoutes = () => {
         }}
       />
       <BottomTab.Screen
-        name="FishermansTrackerLocations"
-        component={FishermansTrackerLocations}
+        name="ThebudyyTrackerLocations"
+        component={ThebudyyTrackerLocations}
         options={{
           tabBarLabel: 'Locations',
           tabBarIcon: ({ color }) => (
@@ -46,8 +46,8 @@ const FishermansTabsRoutes = () => {
         }}
       />
       <BottomTab.Screen
-        name="FishermansTrackerNotes"
-        component={FishermansTrackerNotes}
+        name="ThebudyyTrackerNotes"
+        component={ThebudyyTrackerNotes}
         options={{
           tabBarLabel: 'Notes',
           tabBarIcon: ({ color }) => (
@@ -59,8 +59,8 @@ const FishermansTabsRoutes = () => {
         }}
       />
       <BottomTab.Screen
-        name="FishermansTrackerRecipes"
-        component={FishermansTrackerRecipes}
+        name="ThebudyyTrackerRecipes"
+        component={ThebudyyTrackerRecipes}
         options={{
           tabBarLabel: 'Recipes',
           tabBarIcon: ({ color }) => (
@@ -103,4 +103,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default FishermansTabsRoutes;
+export default Bottomtabsroutes;

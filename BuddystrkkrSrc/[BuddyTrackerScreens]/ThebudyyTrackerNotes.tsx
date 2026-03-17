@@ -2,7 +2,7 @@
 
 import LinearGradient from 'react-native-linear-gradient';
 import Toast from 'react-native-toast-message';
-import { StackList } from '../../Fishermanstackkrouts';
+import { StackList } from '../../Stackkrouts';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { BlurView } from '@react-native-community/blur';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
@@ -38,9 +38,9 @@ export type NoteItem = {
   date: string;
 };
 
-const FishermansTrackerNotes: React.FC = () => {
+const ThebudyyTrackerNotes: React.FC = () => {
   const buddyTrckrNavigation =
-    useNavigation<StackNavigationProp<StackList, 'FishermansTabsRoutes'>>();
+    useNavigation<StackNavigationProp<StackList, 'Bottomtabsroutes'>>();
   const [buddyTrckrNotes, setBuddyTrckrNotes] = useState<NoteItem[]>([]);
   const [buddyTrckrProfileNickname, setBuddyTrckrProfileNickname] = useState<
     string | null
@@ -48,6 +48,26 @@ const FishermansTrackerNotes: React.FC = () => {
   const [buddyTrckrModalVisible, setBuddyTrckrModalVisible] = useState(false);
   const [buddyTrckrTitle, setBuddyTrckrTitle] = useState('');
   const [buddyTrckrDetails, setBuddyTrckrDetails] = useState('');
+  const buddyTrckrShowDemoNotes = buddyTrckrNotes.length === 0;
+  const buddyTrckrDemoNotes: NoteItem[] = [
+    {
+      id: 'demo-note-1',
+      title: 'Best bait combo',
+      date: 'Mar 14, 2026',
+      details:
+        'Tried spinner + light jig near reeds. First bite in 7 minutes. Next time: start earlier and log wind direction.',
+    },
+    {
+      id: 'demo-note-2',
+      title: 'Weather & water notes',
+      date: 'Mar 07, 2026',
+      details:
+        'Cloudy, light drizzle. Fish stayed deeper. Switching to slower retrieve helped. Remember to bring extra line.',
+    },
+  ];
+  const buddyTrckrDisplayedNotes = buddyTrckrShowDemoNotes
+    ? buddyTrckrDemoNotes
+    : buddyTrckrNotes;
 
   useFocusEffect(
     useCallback(() => {
@@ -247,7 +267,7 @@ const FishermansTrackerNotes: React.FC = () => {
             style={styles.buddyTrckrProfileButton}
             activeOpacity={0.8}
             onPress={() =>
-              buddyTrckrNavigation.navigate('FishermansTrackerProfile')
+              buddyTrckrNavigation.navigate('ThebudyyTrackerProfile')
             }
           >
             <Image
@@ -284,7 +304,7 @@ const FishermansTrackerNotes: React.FC = () => {
 
           <View style={styles.buddyTrckrListGradient}>
             <FlatList
-              data={buddyTrckrNotes}
+              data={buddyTrckrDisplayedNotes}
               renderItem={buddyTrckrRenderNoteCard}
               scrollEnabled={false}
               keyExtractor={buddyTrckrItem => buddyTrckrItem.id}
@@ -582,4 +602,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default FishermansTrackerNotes;
+export default ThebudyyTrackerNotes;

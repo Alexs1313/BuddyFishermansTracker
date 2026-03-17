@@ -1,7 +1,7 @@
 // main map screen - allows user to set location, add catches with details and photos, start/end fishing session, also has timer and saves data to async storage
 
 import Toast from 'react-native-toast-message';
-import { useStorage } from '../FishermansStore/fishermansContxt';
+
 import Orientation from 'react-native-orientation-locker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -22,10 +22,10 @@ import {
 import MapView, { Marker } from 'react-native-maps';
 import { launchImageLibrary } from 'react-native-image-picker';
 import type { StackNavigationProp } from '@react-navigation/stack';
-import { StackList } from '../../Fishermanstackkrouts';
+import { StackList } from '../../Stackkrouts';
 
 import LinearGradient from 'react-native-linear-gradient';
-import type { CatchItem, LocationItem } from './FishermansTrackerLocations';
+import type { CatchItem, LocationItem } from './ThebudyyTrackerLocations';
 import { BlurView } from '@react-native-community/blur';
 
 import { useFocusEffect } from '@react-navigation/native';
@@ -36,6 +36,7 @@ import {
   formatDate,
   formatTimer,
 } from '../fishermansUtils';
+import { useStorage } from '../thebuddstrrre/thebuddcontxt';
 
 type MapDraft = {
   title: string;
@@ -55,10 +56,10 @@ const buddyTrckrDefaultRegion = {
 
 const buddyTrckrMaxCatchesPerSession = 2;
 
-const FishermansTrackerMap: React.FC = () => {
+const ThebudyyTrackerMap: React.FC = () => {
   const buddyTrckrNavigation =
-    useNavigation<StackNavigationProp<StackList, 'FishermansTrackerMap'>>();
-  const [buddyTrckrTitle, setBuddyTrckrTitle] = useState('');
+    useNavigation<StackNavigationProp<StackList, 'ThebudyyTrackerMap'>>();
+  const [buddyTrckrTitle, _setBuddyTrckrTitle] = useState('');
   const [buddyTrckrPin, setBuddyTrckrPin] = useState({
     latitude: buddyTrckrDefaultRegion.latitude,
     longitude: buddyTrckrDefaultRegion.longitude,
@@ -85,9 +86,9 @@ const FishermansTrackerMap: React.FC = () => {
   const buddyTrckrTimerRef = useRef<ReturnType<typeof setInterval> | null>(
     null,
   );
-  const [buddyTrckrWeightUnit, setBuddyTrckrWeightUnit] = useState<'kg' | 'lb'>(
-    'kg',
-  );
+  const [buddyTrckrWeightUnit, _setBuddyTrckrWeightUnit] = useState<
+    'kg' | 'lb'
+  >('kg');
   const { isEnabledNotifications: buddyTrckrIsEnabledNotifications } =
     useStorage();
 
@@ -833,4 +834,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default FishermansTrackerMap;
+export default ThebudyyTrackerMap;

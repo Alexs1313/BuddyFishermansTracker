@@ -14,7 +14,7 @@ import {
   View,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import { StackList } from '../../Fishermanstackkrouts';
+import { StackList } from '../../Stackkrouts';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -28,8 +28,9 @@ import {
   SAVED_RECIPES_KEY,
   formatRecipeSteps,
 } from '../fishermansUtils';
-import { useStorage } from '../FishermansStore/fishermansContxt';
+
 import Orientation from 'react-native-orientation-locker';
+import { useStorage } from '../thebuddstrrre/thebuddcontxt';
 
 export type RecipeItem = {
   id: string;
@@ -264,9 +265,9 @@ Open carefully and serve.`,
   },
 ];
 
-const FishermansTrackerRecipes: React.FC = () => {
+const ThebudyyTrackerRecipes: React.FC = () => {
   const buddyTrckrNavigation =
-    useNavigation<StackNavigationProp<StackList, 'FishermansTabsRoutes'>>();
+    useNavigation<StackNavigationProp<StackList, 'Bottomtabsroutes'>>();
   const [buddyTrckrProfileNickname, setBuddyTrckrProfileNickname] = useState<
     string | null
   >(null);
@@ -475,7 +476,7 @@ const FishermansTrackerRecipes: React.FC = () => {
             style={styles.buddyTrckrProfileButton}
             activeOpacity={0.8}
             onPress={() =>
-              buddyTrckrNavigation.navigate('FishermansTrackerProfile')
+              buddyTrckrNavigation.navigate('ThebudyyTrackerProfile')
             }
           >
             <Image
@@ -854,4 +855,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default FishermansTrackerRecipes;
+export default ThebudyyTrackerRecipes;

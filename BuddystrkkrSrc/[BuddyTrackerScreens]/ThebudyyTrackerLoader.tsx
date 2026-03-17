@@ -12,11 +12,11 @@ import {
   StyleSheet,
 } from 'react-native';
 
-import { StackList } from '../../Fishermanstackkrouts';
+import { StackList } from '../../Stackkrouts';
 
-const FishermansTrackerLoader: React.FC = () => {
+const ThebudyyTrackerLoader: React.FC = () => {
   const buddyTrckrNavigation =
-    useNavigation<StackNavigationProp<StackList, 'FishermansTrackerLoader'>>();
+    useNavigation<StackNavigationProp<StackList, 'ThebudyyTrackerLoader'>>();
 
   const buddyTrckrDrive = useRef(new Animated.Value(0)).current;
 
@@ -43,7 +43,7 @@ const FishermansTrackerLoader: React.FC = () => {
 
   useEffect(() => {
     const buddyTrckrTimer = setTimeout(() => {
-      buddyTrckrNavigation.replace('FishermansTrackerOnboard');
+      buddyTrckrNavigation.replace('ThebudyyTrackerOnboard');
     }, 6000);
 
     return () => clearTimeout(buddyTrckrTimer);
@@ -86,12 +86,13 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     alignItems: 'center',
-    marginTop: 120,
+    justifyContent: 'center',
   },
   buddyTrckrImage: {
-    width: 270,
-    height: 270,
+    width: 220,
+    height: 220,
+    borderRadius: 52,
   },
 });
 
-export default FishermansTrackerLoader;
+export default ThebudyyTrackerLoader;

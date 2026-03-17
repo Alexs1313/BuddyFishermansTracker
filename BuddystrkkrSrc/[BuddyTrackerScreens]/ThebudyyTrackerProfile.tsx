@@ -1,9 +1,7 @@
 // profile screen - allows user to set their nickname, choose between kg and lb for weight units, and upload a profile picture, also has a toggle for notifications and a button to share the app with friends, all data is saved to async storage and loaded on app start
 
-import { StackList } from '../../Fishermanstackkrouts';
+import { StackList } from '../../Stackkrouts';
 import LinearGradient from 'react-native-linear-gradient';
-
-import { useStorage } from '../FishermansStore/fishermansContxt';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
@@ -34,6 +32,7 @@ import {
   LOCATIONS_STORAGE_KEY,
   MAP_DRAFT_KEY,
 } from '../fishermansUtils';
+import { useStorage } from '../thebuddstrrre/thebuddcontxt';
 
 type ProfileData = {
   nickname: string;
@@ -41,9 +40,9 @@ type ProfileData = {
   avatarUri: string | null;
 };
 
-const FishermansTrackerProfile: React.FC = () => {
+const ThebudyyTrackerProfile: React.FC = () => {
   const buddyTrckrNavigation =
-    useNavigation<StackNavigationProp<StackList, 'FishermansTrackerProfile'>>();
+    useNavigation<StackNavigationProp<StackList, 'ThebudyyTrackerProfile'>>();
   const [buddyTrckrNickname, setBuddyTrckrNickname] = useState('');
   const [buddyTrckrUnit, setBuddyTrckrUnit] = useState<'kg' | 'lb'>('kg');
   const [buddyTrckrAvatarUri, setBuddyTrckrAvatarUri] = useState<string | null>(
@@ -175,7 +174,7 @@ const FishermansTrackerProfile: React.FC = () => {
 
   const buddyTrckrHandleShareApp = () => {
     Linking.openURL(
-      'https://apps.apple.com/us/app/the-fisherman-buddy-tracker/id6760306838',
+      'https://apps.apple.com/us/app/the-fisher-man-buddy/id6760702999',
     );
   };
 
@@ -385,7 +384,7 @@ const FishermansTrackerProfile: React.FC = () => {
                 source={require('../FishermansTrackerAssets/images/reset.png')}
               />
             </TouchableOpacity>
-
+            {/* 
             {Platform.OS === 'ios' && (
               <TouchableOpacity
                 style={[
@@ -403,7 +402,7 @@ const FishermansTrackerProfile: React.FC = () => {
                   Terms of Use
                 </Text>
               </TouchableOpacity>
-            )}
+            )} */}
           </View>
         </View>
       </ScrollView>
@@ -575,4 +574,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default FishermansTrackerProfile;
+export default ThebudyyTrackerProfile;

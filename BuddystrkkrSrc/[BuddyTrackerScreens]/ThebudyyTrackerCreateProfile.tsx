@@ -2,7 +2,7 @@
 
 import { launchImageLibrary } from 'react-native-image-picker';
 import type { StackNavigationProp } from '@react-navigation/stack';
-import { StackList } from '../../Fishermanstackkrouts';
+import { StackList } from '../../Stackkrouts';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import React, { useState } from 'react';
@@ -21,7 +21,7 @@ import {
 import LinearGradient from 'react-native-linear-gradient';
 import { PROFILE_STORAGE_KEY } from '../fishermansUtils';
 
-const FishermansTrackerCreateProfile: React.FC = () => {
+const ThebudyyTrackerCreateProfile: React.FC = () => {
   const [buddyTrckrNickname, setBuddyTrckrNickname] = useState('');
   const [buddyTrckrUnit, setBuddyTrckrUnit] = useState<'kg' | 'lb'>('kg');
   const [buddyTrckrAvatarUri, setBuddyTrckrAvatarUri] = useState<string | null>(
@@ -29,7 +29,7 @@ const FishermansTrackerCreateProfile: React.FC = () => {
   );
   const navigation =
     useNavigation<
-      StackNavigationProp<StackList, 'FishermansTrackerCreateProfile'>
+      StackNavigationProp<StackList, 'ThebudyyTrackerCreateProfile'>
     >();
 
   const buddyTrckrIsFormValid =
@@ -65,11 +65,11 @@ const FishermansTrackerCreateProfile: React.FC = () => {
         }),
       );
     } catch (_) {}
-    navigation.navigate('FishermansTabsRoutes');
+    navigation.navigate('Bottomtabsroutes');
   };
 
   const buddyTrckrHandleSkip = () => {
-    navigation.navigate('FishermansTabsRoutes');
+    navigation.navigate('Bottomtabsroutes');
   };
 
   return (
@@ -331,4 +331,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default FishermansTrackerCreateProfile;
+export default ThebudyyTrackerCreateProfile;

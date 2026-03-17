@@ -1,7 +1,7 @@
 // home screen - shows quick stats, recent locations and saved recipes, also has buttons to navigate to other screens
 
-import { RECIPES_DATA } from './FishermansTrackerRecipes';
-import { useStorage } from '../FishermansStore/fishermansContxt';
+import { RECIPES_DATA } from './ThebudyyTrackerRecipes';
+
 import {
   LOCATIONS_STORAGE_KEY,
   PROFILE_STORAGE_KEY,
@@ -12,7 +12,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   Image,
   ImageBackground,
@@ -25,8 +25,9 @@ import {
 
 import LinearGradient from 'react-native-linear-gradient';
 
-import type { LocationItem } from './FishermansTrackerLocations';
-import type { RecipeItem } from './FishermansTrackerRecipes';
+import type { LocationItem } from './ThebudyyTrackerLocations';
+import type { RecipeItem } from './ThebudyyTrackerRecipes';
+import { useStorage } from '../thebuddstrrre/thebuddcontxt';
 
 const buddyTrckrBgPath = require('../FishermansTrackerAssets/images/mainbg.png');
 const buddyTrckrHeaderPath = require('../FishermansTrackerAssets/images/header.png');
@@ -36,7 +37,7 @@ const buddyTrckrWhite = '#fff';
 const buddyTrckrGreen = '#286E42';
 const buddyTrckrBlue = '#007083';
 
-const FishermansTrackerHome: React.FC = () => {
+const ThebudyyTrackerHome: React.FC = () => {
   const buddyTrckrNavigation = useNavigation();
   const [buddyTrckrLocations, setBuddyTrckrLocations] = useState<
     LocationItem[]
@@ -51,19 +52,7 @@ const FishermansTrackerHome: React.FC = () => {
   const { setIsEnabledNotifications: buddyTrckrSetIsEnabledNotifications } =
     useStorage();
 
-  useFocusEffect(
-    useCallback(() => {
-      buddyTrckrLoadNotifications();
-    }, []),
-  );
-
-  useFocusEffect(
-    useCallback(() => {
-      buddyTrckrLoadData();
-    }, []),
-  );
-
-  const buddyTrckrLoadNotifications = async () => {
+  const buddyTrckrLoadNotifications = useCallback(async () => {
     try {
       const buddyTrckrNotifValue = await AsyncStorage.getItem(
         NOTIFICATIONS_KEY,
@@ -79,9 +68,9 @@ const FishermansTrackerHome: React.FC = () => {
     } catch {
       console.log('catch err');
     }
-  };
+  }, [buddyTrckrSetIsEnabledNotifications]);
 
-  const buddyTrckrLoadData = async () => {
+  const buddyTrckrLoadData = useCallback(async () => {
     try {
       const [buddyTrckrLocRaw, buddyTrckrProfileRaw, buddyTrckrRecipesRaw] =
         await Promise.all([
@@ -125,7 +114,19 @@ const FishermansTrackerHome: React.FC = () => {
       setBuddyTrckrSavedRecipeIds([]);
       setBuddyTrckrProfileNickname(null);
     }
-  };
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      buddyTrckrLoadNotifications();
+    }, [buddyTrckrLoadNotifications]),
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      buddyTrckrLoadData();
+    }, [buddyTrckrLoadData]),
+  );
 
   const buddyTrckrTotalTrips = buddyTrckrLocations.length;
   const buddyTrckrTotalCatches = buddyTrckrLocations.reduce(
@@ -135,7 +136,47 @@ const FishermansTrackerHome: React.FC = () => {
   );
   const buddyTrckrBiggestCatchKg = getBiggestCatchKg(buddyTrckrLocations);
 
-  const buddyTrckrRecentLocations = buddyTrckrLocations.slice(0, 2);
+  const buddyTrckrShowDemo =
+    buddyTrckrLocations.length === 0 && buddyTrckrSavedRecipeIds.length === 0;
+
+  const buddyTrckrDemoStats = useMemo(() => {
+    const buddyTrckrTrips = 2 + Math.floor(Math.random() * 4); // 2..5
+    const buddyTrckrCatches = buddyTrckrTrips + Math.floor(Math.random() * 6); // trips..trips+5
+    const buddyTrckrBiggest = (2.3 + Math.random() * 8.5).toFixed(1); // 2.3..10.8
+    return {
+      trips: buddyTrckrTrips,
+      catches: buddyTrckrCatches,
+      biggestKg: buddyTrckrBiggest,
+    };
+  }, []);
+
+  const buddyTrckrDemoLocations: LocationItem[] = useMemo(
+    () => [
+      {
+        id: 'demo-location-1',
+        title: 'Sunny Riverside Bend',
+        date: 'Mar 12, 2026',
+        latitude: 45.5123,
+        longitude: -0.4987,
+        catches: [{ id: 'demo-catch-1', title: 'First cast — pike', species: '', weight: '', weatherConditions: '', equipment: '', imageUri: null }],
+      },
+      {
+        id: 'demo-location-2',
+        title: 'Quiet Lake Point',
+        date: 'Mar 05, 2026',
+        latitude: 45.4871,
+        longitude: -0.5214,
+        catches: [{ id: 'demo-catch-2', title: 'Evening bass', species: '', weight: '', weatherConditions: '', equipment: '', imageUri: null }],
+      },
+    ],
+    [],
+  );
+
+  const buddyTrckrRecentLocations = (buddyTrckrShowDemo
+    ? buddyTrckrDemoLocations
+    : buddyTrckrLocations
+  ).slice(0, 2);
+
   const buddyTrckrSavedRecipes: RecipeItem[] = buddyTrckrSavedRecipeIds
     .map(buddyTrckrId =>
       RECIPES_DATA.find(
@@ -148,27 +189,42 @@ const FishermansTrackerHome: React.FC = () => {
     )
     .slice(0, 2);
 
+  const buddyTrckrDisplayedRecipes: RecipeItem[] = buddyTrckrShowDemo
+    ? RECIPES_DATA.slice(0, 2)
+    : buddyTrckrSavedRecipes;
+
+  const buddyTrckrDisplayedTrips = buddyTrckrShowDemo
+    ? buddyTrckrDemoStats.trips
+    : buddyTrckrTotalTrips;
+  const buddyTrckrDisplayedCatches = buddyTrckrShowDemo
+    ? buddyTrckrDemoStats.catches
+    : buddyTrckrTotalCatches;
+  const buddyTrckrDisplayedBiggestCatchKg =
+    buddyTrckrShowDemo && buddyTrckrBiggestCatchKg == null
+      ? buddyTrckrDemoStats.biggestKg
+      : buddyTrckrBiggestCatchKg;
+
   const buddyTrckrOpenProfile = () => {
     (buddyTrckrNavigation as { navigate: (s: string) => void }).navigate(
-      'FishermansTrackerProfile',
+      'ThebudyyTrackerProfile',
     );
   };
 
   const buddyTrckrOpenMap = () => {
     (buddyTrckrNavigation as { navigate: (s: string) => void }).navigate(
-      'FishermansTrackerMap',
+      'ThebudyyTrackerMap',
     );
   };
 
   const buddyTrckrOpenLocationsTab = () => {
     (buddyTrckrNavigation as { navigate: (s: string) => void }).navigate(
-      'FishermansTrackerLocations',
+      'ThebudyyTrackerLocations',
     );
   };
 
   const buddyTrckrOpenRecipesTab = () => {
     (buddyTrckrNavigation as { navigate: (s: string) => void }).navigate(
-      'FishermansTrackerRecipes',
+      'ThebudyyTrackerRecipes',
     );
   };
 
@@ -177,7 +233,7 @@ const FishermansTrackerHome: React.FC = () => {
       buddyTrckrNavigation as {
         navigate: (s: string, p: { locationId: string }) => void;
       }
-    ).navigate('FishermansTrackerLocationDetail', {
+    ).navigate('ThebudyyTrackerLocationDetail', {
       locationId: buddyTrckrItem.id,
     });
   };
@@ -227,8 +283,8 @@ const FishermansTrackerHome: React.FC = () => {
                   source={require('../FishermansTrackerAssets/images/trips.png')}
                 />
                 <Text style={styles.buddyTrckrStatValue}>
-                  {buddyTrckrTotalTrips > 0
-                    ? String(buddyTrckrTotalTrips)
+                  {buddyTrckrDisplayedTrips > 0
+                    ? String(buddyTrckrDisplayedTrips)
                     : '-'}
                 </Text>
               </View>
@@ -247,8 +303,8 @@ const FishermansTrackerHome: React.FC = () => {
                   source={require('../FishermansTrackerAssets/images/catches.png')}
                 />
                 <Text style={styles.buddyTrckrStatValue}>
-                  {buddyTrckrTotalCatches > 0
-                    ? String(buddyTrckrTotalCatches)
+                  {buddyTrckrDisplayedCatches > 0
+                    ? String(buddyTrckrDisplayedCatches)
                     : '-'}
                 </Text>
               </View>
@@ -267,8 +323,8 @@ const FishermansTrackerHome: React.FC = () => {
                   source={require('../FishermansTrackerAssets/images/biggestcatch.png')}
                 />
                 <Text style={styles.buddyTrckrStatValue}>
-                  {buddyTrckrBiggestCatchKg != null
-                    ? `${buddyTrckrBiggestCatchKg} kg`
+                  {buddyTrckrDisplayedBiggestCatchKg != null
+                    ? `${buddyTrckrDisplayedBiggestCatchKg} kg`
                     : '-'}
                 </Text>
               </View>
@@ -281,7 +337,7 @@ const FishermansTrackerHome: React.FC = () => {
               <Text style={styles.buddyTrckrSectionTitle}>
                 Recent fish locations
               </Text>
-              {buddyTrckrLocations.length > 0 && (
+              {!buddyTrckrShowDemo && buddyTrckrLocations.length > 0 && (
                 <TouchableOpacity
                   onPress={buddyTrckrOpenLocationsTab}
                   style={styles.buddyTrckrSeeAllButton}
@@ -297,7 +353,11 @@ const FishermansTrackerHome: React.FC = () => {
                 key={buddyTrckrItem.id}
                 style={styles.buddyTrckrLocationCard}
                 activeOpacity={0.9}
-                onPress={() => buddyTrckrOpenLocationDetail(buddyTrckrItem)}
+                onPress={
+                  buddyTrckrShowDemo
+                    ? buddyTrckrOpenMap
+                    : () => buddyTrckrOpenLocationDetail(buddyTrckrItem)
+                }
               >
                 <View style={styles.buddyTrckrLocationCardIcon}>
                   <Image
@@ -342,7 +402,7 @@ const FishermansTrackerHome: React.FC = () => {
               Your favorite fish recipes
             </Text>
 
-            {buddyTrckrSavedRecipes.map(buddyTrckrItem => (
+            {buddyTrckrDisplayedRecipes.map(buddyTrckrItem => (
               <TouchableOpacity
                 key={buddyTrckrItem.id}
                 style={styles.buddyTrckrRecipeCard}
@@ -605,4 +665,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default FishermansTrackerHome;
+export default ThebudyyTrackerHome;

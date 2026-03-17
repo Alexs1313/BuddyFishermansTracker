@@ -1,5 +1,5 @@
 // onboarding screens - shows 3 screens with info about the app and a button to continue to the next screen, also has pagination dots at the bottom to indicate which screen is currently active
-import { StackList } from '../../Fishermanstackkrouts';
+import { StackList } from '../../Stackkrouts';
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 
@@ -65,12 +65,12 @@ const buddyTrckrTrackerTxts: {
 const buddyTrckrBreakpointCompact = 400;
 const buddyTrckrBreakpointWide = 600;
 
-const FishermansTrackerOnboard: React.FC = () => {
+const ThebudyyTrackerOnboard: React.FC = () => {
   const [buddyTrckrCurrentIndex, setBuddyTrckrCurrentIndex] = useState(0);
   const { width: buddyTrckrScrnWidth, height: buddyTrckrScrnHeight } =
     useWindowDimensions();
   const buddyTrckrNavigation =
-    useNavigation<StackNavigationProp<StackList, 'FishermansTrackerOnboard'>>();
+    useNavigation<StackNavigationProp<StackList, 'ThebudyyTrackerOnboard'>>();
 
   const buddyTrckrShortSide = Math.min(
     buddyTrckrScrnWidth,
@@ -88,7 +88,7 @@ const FishermansTrackerOnboard: React.FC = () => {
     setBuddyTrckrCurrentIndex(buddyTrckrPrev => {
       const buddyTrckrNext = buddyTrckrPrev + 1;
       if (buddyTrckrNext > 2) {
-        buddyTrckrNavigation.navigate('FishermansTrackerCreateProfile');
+        buddyTrckrNavigation.navigate('ThebudyyTrackerCreateProfile');
       }
       return Math.min(buddyTrckrNext, 2);
     });
@@ -253,4 +253,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default FishermansTrackerOnboard;
+export default ThebudyyTrackerOnboard;

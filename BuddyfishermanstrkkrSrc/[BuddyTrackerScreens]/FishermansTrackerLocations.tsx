@@ -40,61 +40,77 @@ export type LocationItem = {
 };
 
 const FishermansTrackerLocations: React.FC = () => {
-  const navigation =
+  const buddyTrckrNavigation =
     useNavigation<StackNavigationProp<StackList, 'FishermansTabsRoutes'>>();
-  const [locations, setLocations] = useState<LocationItem[]>([]);
-  const [profileNickname, setProfileNickname] = useState<string | null>(null);
+  const [buddyTrckrLocations, setBuddyTrckrLocations] = useState<
+    LocationItem[]
+  >([]);
+  const [buddyTrckrProfileNickname, setBuddyTrckrProfileNickname] = useState<
+    string | null
+  >(null);
 
-  const buddyFsrmnsLoadProfile = async () => {
+  const buddyTrckrLoadProfile = async () => {
     try {
-      const raw = await AsyncStorage.getItem(PROFILE_STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw) as { nickname?: string };
-        setProfileNickname(
-          typeof parsed?.nickname === 'string' ? parsed.nickname : null,
+      const buddyTrckrRaw = await AsyncStorage.getItem(PROFILE_STORAGE_KEY);
+      if (buddyTrckrRaw) {
+        const buddyTrckrParsed = JSON.parse(buddyTrckrRaw) as {
+          nickname?: string;
+        };
+        setBuddyTrckrProfileNickname(
+          typeof buddyTrckrParsed?.nickname === 'string'
+            ? buddyTrckrParsed.nickname
+            : null,
         );
       }
-    } catch (err) {
+    } catch (buddyTrckrErr) {
       if (__DEV__) {
-        console.warn('FishermansTrackerLocations: loadProfile failed', err);
+        console.warn(
+          'FishermansTrackerLocations: loadProfile failed',
+          buddyTrckrErr,
+        );
       }
-      setProfileNickname(null);
+      setBuddyTrckrProfileNickname(null);
     }
   };
 
-  const buddyFsrmLoadLocations = async () => {
+  const buddyTrckrLoadLocations = async () => {
     try {
-      const raw = await AsyncStorage.getItem(LOCATIONS_STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw) as LocationItem[];
-        setLocations(Array.isArray(parsed) ? parsed : []);
+      const buddyTrckrRaw = await AsyncStorage.getItem(LOCATIONS_STORAGE_KEY);
+      if (buddyTrckrRaw) {
+        const buddyTrckrParsed = JSON.parse(buddyTrckrRaw) as LocationItem[];
+        setBuddyTrckrLocations(
+          Array.isArray(buddyTrckrParsed) ? buddyTrckrParsed : [],
+        );
       }
-    } catch (err) {
+    } catch (buddyTrckrErr) {
       if (__DEV__) {
-        console.warn('FishermansTrackerLocations: loadLocations failed', err);
+        console.warn(
+          'FishermansTrackerLocations: loadLocations failed',
+          buddyTrckrErr,
+        );
       }
-      setLocations([]);
+      setBuddyTrckrLocations([]);
     }
   };
 
   useFocusEffect(
     useCallback(() => {
-      buddyFsrmLoadLocations();
-      buddyFsrmnsLoadProfile();
+      buddyTrckrLoadLocations();
+      buddyTrckrLoadProfile();
     }, []),
   );
 
-  const buddyFshOpenMap = () => {
-    navigation.navigate('FishermansTrackerMap');
+  const buddyTrckrOpenMap = () => {
+    buddyTrckrNavigation.navigate('FishermansTrackerMap');
   };
 
-  const openDetail = (item: LocationItem) => {
-    navigation.navigate('FishermansTrackerLocationDetail', {
-      locationId: item.id,
+  const buddyTrckrOpenDetail = (buddyTrckrItem: LocationItem) => {
+    buddyTrckrNavigation.navigate('FishermansTrackerLocationDetail', {
+      locationId: buddyTrckrItem.id,
     });
   };
 
-  const buddyFshConfirmDelete = (item: LocationItem) => {
+  const buddyTrckrConfirmDelete = (buddyTrckrItem: LocationItem) => {
     Alert.alert(
       'Delete This Spot?',
       'This location will be permanently removed from your map. Any notes linked to this spot will also be detached.',
@@ -104,20 +120,23 @@ const FishermansTrackerLocations: React.FC = () => {
           text: 'Delete',
           style: 'destructive',
           onPress: () => {
-            setLocations(prev => {
-              const next = prev.filter(l => l.id !== item.id);
+            setBuddyTrckrLocations(buddyTrckrPrev => {
+              const buddyTrckrNext = buddyTrckrPrev.filter(
+                buddyTrckrLocation =>
+                  buddyTrckrLocation.id !== buddyTrckrItem.id,
+              );
               AsyncStorage.setItem(
                 LOCATIONS_STORAGE_KEY,
-                JSON.stringify(next),
-              ).catch(err => {
+                JSON.stringify(buddyTrckrNext),
+              ).catch(buddyTrckrErr => {
                 if (__DEV__) {
                   console.warn(
                     'FishermansTrackerLocations: saveLocations failed',
-                    err,
+                    buddyTrckrErr,
                   );
                 }
               });
-              return next;
+              return buddyTrckrNext;
             });
           },
         },
@@ -125,23 +144,29 @@ const FishermansTrackerLocations: React.FC = () => {
     );
   };
 
-  const renderLocationCard = ({ item }: { item: LocationItem }) => (
+  const buddyTrckrRenderLocationCard = ({
+    item: buddyTrckrItem,
+  }: {
+    item: LocationItem;
+  }) => (
     <TouchableOpacity
-      style={styles.locationCard}
+      style={styles.buddyTrckrLocationCard}
       activeOpacity={0.9}
-      onPress={() => openDetail(item)}
-      onLongPress={() => buddyFshConfirmDelete(item)}
+      onPress={() => buddyTrckrOpenDetail(buddyTrckrItem)}
+      onLongPress={() => buddyTrckrConfirmDelete(buddyTrckrItem)}
     >
-      <View style={styles.locationCardIcon}>
+      <View style={styles.buddyTrckrLocationCardIcon}>
         <Image
           source={require('../FishermansTrackerAssets/images/anchor.png')}
         />
       </View>
-      <View style={styles.locationCardBody}>
-        <Text style={styles.locationCardTitle} numberOfLines={1}>
-          {item.catches?.[0]?.title ?? item.title}
+      <View style={styles.buddyTrckrLocationCardBody}>
+        <Text style={styles.buddyTrckrLocationCardTitle} numberOfLines={1}>
+          {buddyTrckrItem.catches?.[0]?.title ?? buddyTrckrItem.title}
         </Text>
-        <Text style={styles.locationCardDate}>{item.date}</Text>
+        <Text style={styles.buddyTrckrLocationCardDate}>
+          {buddyTrckrItem.date}
+        </Text>
       </View>
     </TouchableOpacity>
   );
@@ -149,62 +174,64 @@ const FishermansTrackerLocations: React.FC = () => {
   return (
     <ImageBackground
       source={require('../FishermansTrackerAssets/images/mainbg.png')}
-      style={styles.fshCnt}
+      style={styles.buddyTrckrFshCnt}
     >
       <ScrollView
         contentContainerStyle={{ flexGrow: 1 }}
         showsVerticalScrollIndicator={false}
         bounces={false}
       >
-        <View style={styles.headerFshCnt}>
+        <View style={styles.buddyTrckrHeaderFshCnt}>
           <Image
             source={require('../FishermansTrackerAssets/images/header.png')}
-            style={styles.headerFsh}
+            style={styles.buddyTrckrHeaderFsh}
           />
           <TouchableOpacity
-            style={styles.profileButton}
+            style={styles.buddyTrckrProfileButton}
             activeOpacity={0.8}
-            onPress={() => navigation.navigate('FishermansTrackerProfile')}
+            onPress={() =>
+              buddyTrckrNavigation.navigate('FishermansTrackerProfile')
+            }
           >
             <Image
               source={require('../FishermansTrackerAssets/images/settings.png')}
             />
-            <Text style={styles.profileButtonText}>
-              Hi, {profileNickname || 'there'}!
+            <Text style={styles.buddyTrckrProfileButtonText}>
+              Hi, {buddyTrckrProfileNickname || 'there'}!
             </Text>
           </TouchableOpacity>
           <Image
             source={require('../FishermansTrackerAssets/images/headerImg.png')}
-            style={styles.headerImg}
+            style={styles.buddyTrckrHeaderImg}
           />
         </View>
 
-        <View style={styles.content}>
-          <Text style={styles.promptText}>
+        <View style={styles.buddyTrckrContent}>
+          <Text style={styles.buddyTrckrPromptText}>
             Search new locations, go to map!
           </Text>
 
           <TouchableOpacity
-            onPress={buddyFshOpenMap}
+            onPress={buddyTrckrOpenMap}
             activeOpacity={0.8}
-            style={styles.openMapButtonContainer}
+            style={styles.buddyTrckrOpenMapButtonContainer}
           >
             <LinearGradient
               colors={['#A2E8D5', '#FFFAD0', '#2CCCE7']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
-              style={styles.openMapButton}
+              style={styles.buddyTrckrOpenMapButton}
             >
-              <Text style={styles.openMapButtonText}>Open map</Text>
+              <Text style={styles.buddyTrckrOpenMapButtonText}>Open map</Text>
             </LinearGradient>
           </TouchableOpacity>
 
           <FlatList
-            data={locations}
+            data={buddyTrckrLocations}
             scrollEnabled={false}
-            renderItem={renderLocationCard}
-            keyExtractor={item => item.id}
-            contentContainerStyle={styles.listContent}
+            renderItem={buddyTrckrRenderLocationCard}
+            keyExtractor={buddyTrckrItem => buddyTrckrItem.id}
+            contentContainerStyle={styles.buddyTrckrListContent}
             showsVerticalScrollIndicator={false}
           />
         </View>
@@ -214,25 +241,25 @@ const FishermansTrackerLocations: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  fshCnt: {
+  buddyTrckrFshCnt: {
     flex: 1,
   },
-  headerFshCnt: {
+  buddyTrckrHeaderFshCnt: {
     width: '100%',
     marginBottom: 8,
   },
-  headerFsh: {
+  buddyTrckrHeaderFsh: {
     width: '100%',
     height: 156,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
   },
-  headerImg: {
+  buddyTrckrHeaderImg: {
     position: 'absolute',
     right: 20,
     bottom: -10,
   },
-  profileButton: {
+  buddyTrckrProfileButton: {
     position: 'absolute',
     left: 15,
     top: 50,
@@ -246,43 +273,43 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#fff',
   },
-  profileButtonText: {
+  buddyTrckrProfileButtonText: {
     fontSize: 16,
     fontWeight: '500',
     color: '#fff',
   },
-  content: {
+  buddyTrckrContent: {
     flex: 1,
     paddingHorizontal: 20,
     paddingBottom: 100,
   },
-  promptText: {
+  buddyTrckrPromptText: {
     fontSize: 20,
     fontWeight: '700',
     color: '#fff',
     marginBottom: 16,
     marginTop: 10,
   },
-  openMapButtonContainer: {
+  buddyTrckrOpenMapButtonContainer: {
     width: '100%',
     marginBottom: 20,
   },
-  openMapButton: {
+  buddyTrckrOpenMapButton: {
     width: '100%',
     height: 51,
     borderRadius: 60,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  openMapButtonText: {
+  buddyTrckrOpenMapButtonText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#007083',
   },
-  listContent: {
+  buddyTrckrListContent: {
     paddingBottom: 20,
   },
-  locationCard: {
+  buddyTrckrLocationCard: {
     flexDirection: 'row',
     alignItems: 'center',
     width: '100%',
@@ -293,21 +320,21 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#fff',
   },
-  locationCardIcon: {
+  buddyTrckrLocationCardIcon: {
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
-  locationCardBody: {
+  buddyTrckrLocationCardBody: {
     flex: 1,
   },
-  locationCardTitle: {
+  buddyTrckrLocationCardTitle: {
     fontSize: 18,
     fontWeight: '700',
     color: '#fff',
     marginBottom: 4,
   },
-  locationCardDate: {
+  buddyTrckrLocationCardDate: {
     fontSize: 14,
     color: '#FFC813',
   },

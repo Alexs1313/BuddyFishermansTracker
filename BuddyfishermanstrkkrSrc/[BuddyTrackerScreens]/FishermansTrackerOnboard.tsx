@@ -18,22 +18,30 @@ import type { ImageSourcePropType } from 'react-native';
 
 import type { StackNavigationProp } from '@react-navigation/stack';
 
-const bGradients = ['#A2E8D5', '#FFFAD0', '#2CCCE7'];
-const bGradStart = { x: 0, y: 0 };
-const bGradEnd = { x: 1, y: 0 };
-const bgPath = '../FishermansTrackerAssets/images/onboarding/bg.png';
-const framePath = '../FishermansTrackerAssets/images/onboarding/frame.png';
-const onbim1Path = '../FishermansTrackerAssets/images/onboarding/onbim1.png';
-const onbim2Path = '../FishermansTrackerAssets/images/onboarding/onbim2.png';
-const onbim3Path = '../FishermansTrackerAssets/images/onboarding/onbim3.png';
+const buddyTrckrBGradients = ['#A2E8D5', '#FFFAD0', '#2CCCE7'];
+const buddyTrckrBGradStart = { x: 0, y: 0 };
+const buddyTrckrBGradEnd = { x: 1, y: 0 };
+const buddyTrckrBgPath = '../FishermansTrackerAssets/images/onboarding/bg.png';
+const buddyTrckrFramePath =
+  '../FishermansTrackerAssets/images/onboarding/frame.png';
+const buddyTrckrOnbim1Path =
+  '../FishermansTrackerAssets/images/onboarding/onbim1.png';
+const buddyTrckrOnbim2Path =
+  '../FishermansTrackerAssets/images/onboarding/onbim2.png';
+const buddyTrckrOnbim3Path =
+  '../FishermansTrackerAssets/images/onboarding/onbim3.png';
 
-const onboardImages: ImageSourcePropType[] = [
-  require(onbim1Path),
-  require(onbim2Path),
-  require(onbim3Path),
+const buddyTrckrOnboardImages: ImageSourcePropType[] = [
+  require(buddyTrckrOnbim1Path),
+  require(buddyTrckrOnbim2Path),
+  require(buddyTrckrOnbim3Path),
 ];
 
-const trackerTxts: { title: string; subtitle: string; btnTxt: string }[] = [
+const buddyTrckrTrackerTxts: {
+  title: string;
+  subtitle: string;
+  btnTxt: string;
+}[] = [
   {
     title: 'Meet Your Fishing Buddy',
     btnTxt: 'Continue',
@@ -54,34 +62,45 @@ const trackerTxts: { title: string; subtitle: string; btnTxt: string }[] = [
   },
 ];
 
-const BREAKPOINT_COMPACT = 400;
-const BREAKPOINT_WIDE = 600;
+const buddyTrckrBreakpointCompact = 400;
+const buddyTrckrBreakpointWide = 600;
 
 const FishermansTrackerOnboard: React.FC = () => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const { width: scrnWidth, height: scrnHeight } = useWindowDimensions();
-  const navigation =
+  const [buddyTrckrCurrentIndex, setBuddyTrckrCurrentIndex] = useState(0);
+  const { width: buddyTrckrScrnWidth, height: buddyTrckrScrnHeight } =
+    useWindowDimensions();
+  const buddyTrckrNavigation =
     useNavigation<StackNavigationProp<StackList, 'FishermansTrackerOnboard'>>();
 
-  const shortSide = Math.min(scrnWidth, scrnHeight);
-  const isCompact = shortSide < BREAKPOINT_COMPACT;
-  const isWide = scrnWidth >= BREAKPOINT_WIDE || scrnWidth > scrnHeight;
-  const sc = isCompact ? 0.9 : isWide ? 1.08 : 1;
-  const buttonWidth = Math.min(scrnWidth * 0.9, 420);
-  const bottomPadding = Math.max(24, Math.min(55, 55 * sc));
+  const buddyTrckrShortSide = Math.min(
+    buddyTrckrScrnWidth,
+    buddyTrckrScrnHeight,
+  );
+  const buddyTrckrIsCompact = buddyTrckrShortSide < buddyTrckrBreakpointCompact;
+  const buddyTrckrIsWide =
+    buddyTrckrScrnWidth >= buddyTrckrBreakpointWide ||
+    buddyTrckrScrnWidth > buddyTrckrScrnHeight;
+  const buddyTrckrSc = buddyTrckrIsCompact ? 0.9 : buddyTrckrIsWide ? 1.08 : 1;
+  const buddyTrckrButtonWidth = Math.min(buddyTrckrScrnWidth * 0.9, 420);
+  const buddyTrckrBottomPadding = Math.max(24, Math.min(55, 55 * buddyTrckrSc));
 
-  const buddyFshrhandleNextBoard = () => {
-    setCurrentIndex(prev => {
-      const next = prev + 1;
-      if (next > 2) navigation.navigate('FishermansTrackerCreateProfile');
-      return Math.min(next, 2);
+  const buddyTrckrHandleNextBoard = () => {
+    setBuddyTrckrCurrentIndex(buddyTrckrPrev => {
+      const buddyTrckrNext = buddyTrckrPrev + 1;
+      if (buddyTrckrNext > 2) {
+        buddyTrckrNavigation.navigate('FishermansTrackerCreateProfile');
+      }
+      return Math.min(buddyTrckrNext, 2);
     });
   };
 
   return (
-    <ImageBackground source={require(bgPath)} style={styles.background}>
+    <ImageBackground
+      source={require(buddyTrckrBgPath)}
+      style={styles.buddyTrckrBackground}
+    >
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={styles.buddyTrckrScrollContent}
         showsVerticalScrollIndicator={false}
         bounces={false}
       >
@@ -90,31 +109,37 @@ const FishermansTrackerOnboard: React.FC = () => {
             flex: 1,
             justifyContent: 'flex-end',
             alignItems: 'center',
-            paddingBottom: bottomPadding,
+            paddingBottom: buddyTrckrBottomPadding,
           }}
         >
-          <Image source={onboardImages[currentIndex]} style={{ top: 10 }} />
+          <Image
+            source={buddyTrckrOnboardImages[buddyTrckrCurrentIndex]}
+            style={{ top: 10 }}
+          />
+
           <View>
             <ImageBackground
-              source={require(framePath)}
-              style={styles.textboard}
+              source={require(buddyTrckrFramePath)}
+              style={styles.buddyTrckrTextboard}
             >
-              <View style={styles.textboardContent}>
-                <Text style={styles.textboardText}>
-                  {trackerTxts[currentIndex].title}
+              <View style={styles.buddyTrckrTextboardContent}>
+                <Text style={styles.buddyTrckrTextboardText}>
+                  {buddyTrckrTrackerTxts[buddyTrckrCurrentIndex].title}
                 </Text>
-                <Text style={styles.textboardSubText}>
-                  {trackerTxts[currentIndex].subtitle}
+                <Text style={styles.buddyTrckrTextboardSubText}>
+                  {buddyTrckrTrackerTxts[buddyTrckrCurrentIndex].subtitle}
                 </Text>
               </View>
             </ImageBackground>
-            <View style={styles.pagination}>
-              {[1, 2, 3].map(item => (
+
+            <View style={styles.buddyTrckrPagination}>
+              {[1, 2, 3].map(buddyTrckrItem => (
                 <View
-                  key={item}
+                  key={buddyTrckrItem}
                   style={[
-                    styles.paginationItem,
-                    currentIndex === item - 1 && styles.paginationItemActive,
+                    styles.buddyTrckrPaginationItem,
+                    buddyTrckrCurrentIndex === buddyTrckrItem - 1 &&
+                      styles.buddyTrckrPaginationItemActive,
                   ]}
                 />
               ))}
@@ -122,24 +147,35 @@ const FishermansTrackerOnboard: React.FC = () => {
           </View>
 
           <TouchableOpacity
-            onPress={buddyFshrhandleNextBoard}
+            onPress={buddyTrckrHandleNextBoard}
             activeOpacity={0.8}
             style={[
-              styles.buttonContainer,
-              { width: buttonWidth, marginTop: 20 * sc },
+              styles.buddyTrckrButtonContainer,
+              {
+                width: buddyTrckrButtonWidth,
+                marginTop: 20 * buddyTrckrSc,
+              },
             ]}
           >
             <LinearGradient
-              colors={bGradients}
-              start={bGradStart}
-              end={bGradEnd}
+              colors={buddyTrckrBGradients}
+              start={buddyTrckrBGradStart}
+              end={buddyTrckrBGradEnd}
               style={[
-                styles.button,
-                { height: 51 * sc, borderRadius: 25.5 * sc },
+                styles.buddyTrckrButton,
+                {
+                  height: 51 * buddyTrckrSc,
+                  borderRadius: 25.5 * buddyTrckrSc,
+                },
               ]}
             >
-              <Text style={[styles.buttonText, { fontSize: 16 * sc }]}>
-                {trackerTxts[currentIndex].btnTxt}
+              <Text
+                style={[
+                  styles.buddyTrckrButtonText,
+                  { fontSize: 16 * buddyTrckrSc },
+                ]}
+              >
+                {buddyTrckrTrackerTxts[buddyTrckrCurrentIndex].btnTxt}
               </Text>
             </LinearGradient>
           </TouchableOpacity>
@@ -150,51 +186,51 @@ const FishermansTrackerOnboard: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  background: {
+  buddyTrckrBackground: {
     flex: 1,
   },
-  scrollContent: {
+  buddyTrckrScrollContent: {
     flexGrow: 1,
   },
-  buttonContainer: {
+  buddyTrckrButtonContainer: {
     alignSelf: 'center',
   },
-  button: {
+  buddyTrckrButton: {
     width: '100%',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  textboardText: {
+  buddyTrckrTextboardText: {
     fontSize: 18,
     fontWeight: '700',
     color: '#fff',
     textAlign: 'center',
     marginBottom: 10,
   },
-  buttonText: {
+  buddyTrckrButtonText: {
     fontWeight: '500',
     color: '#007083',
   },
-  textboard: {
+  buddyTrckrTextboard: {
     width: 361,
     height: 266,
     justifyContent: 'center',
     alignItems: 'center',
     resizeMode: 'contain',
   },
-  textboardContent: {
+  buddyTrckrTextboardContent: {
     padding: 20,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  textboardSubText: {
+  buddyTrckrTextboardSubText: {
     fontSize: 15,
     fontWeight: '500',
     color: '#fff',
     textAlign: 'center',
     marginBottom: 30,
   },
-  pagination: {
+  buddyTrckrPagination: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
@@ -202,17 +238,17 @@ const styles = StyleSheet.create({
     bottom: 32,
     alignSelf: 'center',
   },
-  paginationItem: {
+  buddyTrckrPaginationItem: {
     width: 8,
     height: 8,
     borderRadius: 5,
     marginHorizontal: 2.4,
     backgroundColor: '#FFFFFFB0',
   },
-  paginationItemActive: {
+  buddyTrckrPaginationItemActive: {
     backgroundColor: '#fff',
   },
-  paginationItemInactive: {
+  buddyTrckrPaginationItemInactive: {
     backgroundColor: '#fff',
   },
 });

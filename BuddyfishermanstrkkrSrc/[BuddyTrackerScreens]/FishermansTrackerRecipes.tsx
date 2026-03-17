@@ -265,144 +265,184 @@ Open carefully and serve.`,
 ];
 
 const FishermansTrackerRecipes: React.FC = () => {
-  const navigation =
+  const buddyTrckrNavigation =
     useNavigation<StackNavigationProp<StackList, 'FishermansTabsRoutes'>>();
-  const [profileNickname, setProfileNickname] = useState<string | null>(null);
-  const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
-  const [detailRecipe, setDetailRecipe] = useState<RecipeItem | null>(null);
-  const { isEnabledNotifications } = useStorage();
+  const [buddyTrckrProfileNickname, setBuddyTrckrProfileNickname] = useState<
+    string | null
+  >(null);
+  const [buddyTrckrSavedIds, setBuddyTrckrSavedIds] = useState<Set<string>>(
+    new Set(),
+  );
+  const [buddyTrckrDetailRecipe, setBuddyTrckrDetailRecipe] =
+    useState<RecipeItem | null>(null);
+  const { isEnabledNotifications: buddyTrckrIsEnabledNotifications } =
+    useStorage();
 
   useFocusEffect(
     useCallback(() => {
-      if (Platform.OS === 'android' && detailRecipe !== null) {
+      if (Platform.OS === 'android' && buddyTrckrDetailRecipe !== null) {
         Orientation.lockToPortrait();
       }
 
       return () => Orientation.unlockAllOrientations();
-    }, [detailRecipe !== null]),
+    }, [buddyTrckrDetailRecipe !== null]),
   );
 
-  const getSvdProfile = async () => {
+  const buddyTrckrGetSvdProfile = async () => {
     try {
-      const raw = await AsyncStorage.getItem(PROFILE_STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw) as { nickname?: string };
-        setProfileNickname(
-          typeof parsed?.nickname === 'string' ? parsed.nickname : null,
+      const buddyTrckrRaw = await AsyncStorage.getItem(PROFILE_STORAGE_KEY);
+      if (buddyTrckrRaw) {
+        const buddyTrckrParsed = JSON.parse(buddyTrckrRaw) as {
+          nickname?: string;
+        };
+        setBuddyTrckrProfileNickname(
+          typeof buddyTrckrParsed?.nickname === 'string'
+            ? buddyTrckrParsed.nickname
+            : null,
         );
       }
-    } catch (err) {
+    } catch (buddyTrckrErr) {
       if (__DEV__) {
-        console.warn('FishermansTrackerRecipes: getSvdProfile failed', err);
+        console.warn(
+          'FishermansTrackerRecipes: getSvdProfile failed',
+          buddyTrckrErr,
+        );
       }
-      setProfileNickname(null);
+      setBuddyTrckrProfileNickname(null);
     }
   };
 
-  const loadSavedRecipes = async () => {
+  const buddyTrckrLoadSavedRecipes = async () => {
     try {
-      const raw = await AsyncStorage.getItem(SAVED_RECIPES_KEY);
-      if (raw) {
-        const arr = JSON.parse(raw) as string[];
-        setSavedIds(new Set(Array.isArray(arr) ? arr : []));
+      const buddyTrckrRaw = await AsyncStorage.getItem(SAVED_RECIPES_KEY);
+      if (buddyTrckrRaw) {
+        const buddyTrckrArr = JSON.parse(buddyTrckrRaw) as string[];
+        setBuddyTrckrSavedIds(
+          new Set(Array.isArray(buddyTrckrArr) ? buddyTrckrArr : []),
+        );
       }
-    } catch (err) {
+    } catch (buddyTrckrErr) {
       if (__DEV__) {
-        console.warn('FishermansTrackerRecipes: loadSavedRecipes failed', err);
+        console.warn(
+          'FishermansTrackerRecipes: loadSavedRecipes failed',
+          buddyTrckrErr,
+        );
       }
-      setSavedIds(new Set());
+      setBuddyTrckrSavedIds(new Set());
     }
   };
 
   useFocusEffect(
     useCallback(() => {
-      getSvdProfile();
-      loadSavedRecipes();
+      buddyTrckrGetSvdProfile();
+      buddyTrckrLoadSavedRecipes();
     }, []),
   );
 
-  const toggleSavedRecipe = (id: string) => {
-    setSavedIds(prev => {
-      const next = new Set(prev);
-      const wasSaved = next.has(id);
-      if (wasSaved) next.delete(id);
-      else next.add(id);
-      AsyncStorage.setItem(SAVED_RECIPES_KEY, JSON.stringify(Array.from(next)))
+  const buddyTrckrToggleSavedRecipe = (buddyTrckrId: string) => {
+    setBuddyTrckrSavedIds(buddyTrckrPrev => {
+      const buddyTrckrNext = new Set(buddyTrckrPrev);
+      const buddyTrckrWasSaved = buddyTrckrNext.has(buddyTrckrId);
+
+      if (buddyTrckrWasSaved) {
+        buddyTrckrNext.delete(buddyTrckrId);
+      } else {
+        buddyTrckrNext.add(buddyTrckrId);
+      }
+
+      AsyncStorage.setItem(
+        SAVED_RECIPES_KEY,
+        JSON.stringify(Array.from(buddyTrckrNext)),
+      )
         .then(() => {
-          if (isEnabledNotifications) {
+          if (buddyTrckrIsEnabledNotifications) {
             Toast.show({
               type: 'success',
-              text1: wasSaved ? 'Removed from saved!' : 'Recipe saved!',
+              text1: buddyTrckrWasSaved
+                ? 'Removed from saved!'
+                : 'Recipe saved!',
               position: 'top',
               visibilityTime: 2000,
             });
           }
         })
-        .catch(err => {
+        .catch(buddyTrckrErr => {
           if (__DEV__) {
-            console.warn('FishermansTrackerRecipes: saveRecipes failed', err);
+            console.warn(
+              'FishermansTrackerRecipes: saveRecipes failed',
+              buddyTrckrErr,
+            );
           }
         });
-      return next;
+
+      return buddyTrckrNext;
     });
   };
 
-  const openDetail = (recipe: RecipeItem) => {
-    setDetailRecipe(recipe);
+  const buddyTrckrOpenDetail = (buddyTrckrRecipe: RecipeItem) => {
+    setBuddyTrckrDetailRecipe(buddyTrckrRecipe);
   };
 
-  const closeDetail = () => {
-    setDetailRecipe(null);
+  const buddyTrckrCloseDetail = () => {
+    setBuddyTrckrDetailRecipe(null);
   };
 
-  const shareRecipe = (recipe: RecipeItem) => {
-    const message = [
-      recipe.title,
-      `Servings: ${recipe.servings}  Approx. Time: ${recipe.time} minutes`,
+  const buddyTrckrShareRecipe = (buddyTrckrRecipe: RecipeItem) => {
+    const buddyTrckrMessage = [
+      buddyTrckrRecipe.title,
+      `Servings: ${buddyTrckrRecipe.servings}  Approx. Time: ${buddyTrckrRecipe.time} minutes`,
       'Ingredients:',
-      recipe.ingredients,
+      buddyTrckrRecipe.ingredients,
       'Steps:',
-      recipe.steps,
+      buddyTrckrRecipe.steps,
     ].join('\n\n');
-    Share.share({ message, title: recipe.title });
+
+    Share.share({ message: buddyTrckrMessage, title: buddyTrckrRecipe.title });
   };
 
-  const renderRecipeCard = ({ item }: { item: RecipeItem }) => {
-    const saved = savedIds.has(item.id);
+  const buddyTrckrRenderRecipeCard = ({
+    item: buddyTrckrItem,
+  }: {
+    item: RecipeItem;
+  }) => {
+    const buddyTrckrSaved = buddyTrckrSavedIds.has(buddyTrckrItem.id);
+
     return (
       <TouchableOpacity
         style={styles.buddyTrckrRecipeCard}
         activeOpacity={0.9}
-        onPress={() => openDetail(item)}
+        onPress={() => buddyTrckrOpenDetail(buddyTrckrItem)}
       >
         <View style={styles.buddyTrckrRecipeCardLeft}>
           <Image
             source={require('../FishermansTrackerAssets/images/recipes.png')}
           />
         </View>
+
         <View style={styles.buddyTrckrRecipeCardBody}>
           <Text style={styles.buddyTrckrRecipeCardTitle} numberOfLines={2}>
-            {item.title}
+            {buddyTrckrItem.title}
           </Text>
           <View style={styles.buddyTrckrRecipeTags}>
             <View style={styles.buddyTrckrRecipeTag}>
               <Text style={styles.buddyTrckrRecipeTagText}>
-                Servings: {item.servings}
+                Servings: {buddyTrckrItem.servings}
               </Text>
             </View>
             <View style={styles.buddyTrckrRecipeTag}>
               <Text style={styles.buddyTrckrRecipeTagText}>
-                Time: ~{item.time} min
+                Time: ~{buddyTrckrItem.time} min
               </Text>
             </View>
           </View>
         </View>
+
         <TouchableOpacity
           style={styles.buddyTrckrBookmarkButton}
-          onPress={() => toggleSavedRecipe(item.id)}
+          onPress={() => buddyTrckrToggleSavedRecipe(buddyTrckrItem.id)}
           activeOpacity={0.8}
         >
-          {saved ? (
+          {buddyTrckrSaved ? (
             <Image
               source={require('../FishermansTrackerAssets/images/saved.png')}
             />
@@ -434,13 +474,15 @@ const FishermansTrackerRecipes: React.FC = () => {
           <TouchableOpacity
             style={styles.buddyTrckrProfileButton}
             activeOpacity={0.8}
-            onPress={() => navigation.navigate('FishermansTrackerProfile')}
+            onPress={() =>
+              buddyTrckrNavigation.navigate('FishermansTrackerProfile')
+            }
           >
             <Image
               source={require('../FishermansTrackerAssets/images/settings.png')}
             />
             <Text style={styles.buddyTrckrProfileButtonText}>
-              Hi, {profileNickname || 'there'}!
+              Hi, {buddyTrckrProfileNickname || 'there'}!
             </Text>
           </TouchableOpacity>
           <Image
@@ -454,21 +496,21 @@ const FishermansTrackerRecipes: React.FC = () => {
 
           <FlatList
             data={RECIPES_DATA}
-            renderItem={renderRecipeCard}
+            renderItem={buddyTrckrRenderRecipeCard}
             scrollEnabled={false}
-            keyExtractor={item => item.id}
+            keyExtractor={buddyTrckrItem => buddyTrckrItem.id}
             contentContainerStyle={styles.buddyTrckrListContent}
             showsVerticalScrollIndicator={false}
           />
         </View>
 
         <Modal
-          visible={detailRecipe !== null}
+          visible={buddyTrckrDetailRecipe !== null}
           animationType="slide"
-          onRequestClose={closeDetail}
+          onRequestClose={buddyTrckrCloseDetail}
           statusBarTranslucent={Platform.OS === 'android'}
         >
-          {detailRecipe && (
+          {buddyTrckrDetailRecipe && (
             <ImageBackground
               source={require('../FishermansTrackerAssets/images/mainbg.png')}
               style={styles.buddyTrckrDetailScreen}
@@ -484,7 +526,7 @@ const FishermansTrackerRecipes: React.FC = () => {
                 />
                 <TouchableOpacity
                   style={styles.buddyTrckrBackButton}
-                  onPress={closeDetail}
+                  onPress={buddyTrckrCloseDetail}
                   activeOpacity={0.8}
                 >
                   <Image
@@ -508,18 +550,22 @@ const FishermansTrackerRecipes: React.FC = () => {
                         style={styles.buddyTrckrDetailBookIcon}
                       />
                     </View>
+
                     <Text
                       style={styles.buddyTrckrDetailTitle}
                       numberOfLines={2}
                     >
-                      {detailRecipe.title}
+                      {buddyTrckrDetailRecipe.title}
                     </Text>
+
                     <TouchableOpacity
                       style={styles.buddyTrckrDetailBookmarkBtn}
-                      onPress={() => toggleSavedRecipe(detailRecipe.id)}
+                      onPress={() =>
+                        buddyTrckrToggleSavedRecipe(buddyTrckrDetailRecipe.id)
+                      }
                       activeOpacity={0.8}
                     >
-                      {savedIds.has(detailRecipe.id) ? (
+                      {buddyTrckrSavedIds.has(buddyTrckrDetailRecipe.id) ? (
                         <Image
                           source={require('../FishermansTrackerAssets/images/saved.png')}
                           style={styles.buddyTrckrDetailBookmarkIcon}
@@ -532,32 +578,38 @@ const FishermansTrackerRecipes: React.FC = () => {
                       )}
                     </TouchableOpacity>
                   </View>
+
                   <View style={styles.buddyTrckrDetailTags}>
                     <View style={styles.buddyTrckrRecipeTag}>
                       <Text style={styles.buddyTrckrRecipeTagText}>
-                        Servings: {detailRecipe.servings}
+                        Servings: {buddyTrckrDetailRecipe.servings}
                       </Text>
                     </View>
                     <View style={styles.buddyTrckrRecipeTag}>
                       <Text style={styles.buddyTrckrRecipeTagText}>
-                        Time: ~{detailRecipe.time} min
+                        Time: ~{buddyTrckrDetailRecipe.time} min
                       </Text>
                     </View>
                   </View>
+
                   <Text style={styles.buddyTrckrDetailSectionTitle}>
                     Ingredients:
                   </Text>
                   <Text style={styles.buddyTrckrDetailBody}>
-                    {detailRecipe.ingredients}
+                    {buddyTrckrDetailRecipe.ingredients}
                   </Text>
+
                   <Text style={styles.buddyTrckrDetailSectionTitle}>
                     Steps:
                   </Text>
                   <Text style={styles.buddyTrckrDetailBody}>
-                    {formatRecipeSteps(detailRecipe.steps)}
+                    {formatRecipeSteps(buddyTrckrDetailRecipe.steps)}
                   </Text>
+
                   <TouchableOpacity
-                    onPress={() => shareRecipe(detailRecipe)}
+                    onPress={() =>
+                      buddyTrckrShareRecipe(buddyTrckrDetailRecipe)
+                    }
                     activeOpacity={0.8}
                     style={styles.buddyTrckrShareButtonContainer}
                   >

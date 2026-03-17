@@ -39,105 +39,129 @@ export type NoteItem = {
 };
 
 const FishermansTrackerNotes: React.FC = () => {
-  const navigation =
+  const buddyTrckrNavigation =
     useNavigation<StackNavigationProp<StackList, 'FishermansTabsRoutes'>>();
-  const [buddyFshNotes, setBuddyFshNotes] = useState<NoteItem[]>([]);
-  const [profileNickname, setProfileNickname] = useState<string | null>(null);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [buddyFshTitle, setBuddyFshTitle] = useState('');
-  const [buddyFshDetails, setBuddyFshDetails] = useState('');
+  const [buddyTrckrNotes, setBuddyTrckrNotes] = useState<NoteItem[]>([]);
+  const [buddyTrckrProfileNickname, setBuddyTrckrProfileNickname] = useState<
+    string | null
+  >(null);
+  const [buddyTrckrModalVisible, setBuddyTrckrModalVisible] = useState(false);
+  const [buddyTrckrTitle, setBuddyTrckrTitle] = useState('');
+  const [buddyTrckrDetails, setBuddyTrckrDetails] = useState('');
 
   useFocusEffect(
     useCallback(() => {
-      if (Platform.OS === 'android' && modalVisible) {
+      if (Platform.OS === 'android' && buddyTrckrModalVisible) {
         Orientation.lockToPortrait();
       }
 
       return () => Orientation.unlockAllOrientations();
-    }, [modalVisible]),
+    }, [buddyTrckrModalVisible]),
   );
 
-  const buddyFshloadProfile = async () => {
+  const buddyTrckrLoadProfile = async () => {
     try {
-      const raw = await AsyncStorage.getItem(PROFILE_STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw) as { nickname?: string };
-        setProfileNickname(
-          typeof parsed?.nickname === 'string' ? parsed.nickname : null,
+      const buddyTrckrRaw = await AsyncStorage.getItem(PROFILE_STORAGE_KEY);
+      if (buddyTrckrRaw) {
+        const buddyTrckrParsed = JSON.parse(buddyTrckrRaw) as {
+          nickname?: string;
+        };
+        setBuddyTrckrProfileNickname(
+          typeof buddyTrckrParsed?.nickname === 'string'
+            ? buddyTrckrParsed.nickname
+            : null,
         );
       }
-    } catch (err) {
+    } catch (buddyTrckrErr) {
       if (__DEV__) {
-        console.warn('FishermansTrackerNotes: loadProfile failed', err);
+        console.warn(
+          'FishermansTrackerNotes: loadProfile failed',
+          buddyTrckrErr,
+        );
       }
-      setProfileNickname(null);
+      setBuddyTrckrProfileNickname(null);
     }
   };
 
-  const buddyFshLoadNotes = async () => {
+  const buddyTrckrLoadNotes = async () => {
     try {
-      const raw = await AsyncStorage.getItem(NOTES_STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw) as NoteItem[];
-        setBuddyFshNotes(Array.isArray(parsed) ? parsed : []);
+      const buddyTrckrRaw = await AsyncStorage.getItem(NOTES_STORAGE_KEY);
+      if (buddyTrckrRaw) {
+        const buddyTrckrParsed = JSON.parse(buddyTrckrRaw) as NoteItem[];
+        setBuddyTrckrNotes(
+          Array.isArray(buddyTrckrParsed) ? buddyTrckrParsed : [],
+        );
       }
-    } catch (err) {
+    } catch (buddyTrckrErr) {
       if (__DEV__) {
-        console.warn('FishermansTrackerNotes: loadNotes failed', err);
+        console.warn('FishermansTrackerNotes: loadNotes failed', buddyTrckrErr);
       }
-      setBuddyFshNotes([]);
+      setBuddyTrckrNotes([]);
     }
   };
 
-  const buddyFshSaveNotes = async (nextNotes: NoteItem[]) => {
+  const buddyTrckrSaveNotes = async (buddyTrckrNextNotes: NoteItem[]) => {
     try {
-      await AsyncStorage.setItem(NOTES_STORAGE_KEY, JSON.stringify(nextNotes));
-    } catch (err) {
+      await AsyncStorage.setItem(
+        NOTES_STORAGE_KEY,
+        JSON.stringify(buddyTrckrNextNotes),
+      );
+    } catch (buddyTrckrErr) {
       if (__DEV__) {
-        console.warn('FishermansTrackerNotes: saveNotes failed', err);
+        console.warn('FishermansTrackerNotes: saveNotes failed', buddyTrckrErr);
       }
     }
   };
 
   useFocusEffect(
     useCallback(() => {
-      buddyFshLoadNotes();
-      buddyFshloadProfile();
+      buddyTrckrLoadNotes();
+      buddyTrckrLoadProfile();
     }, []),
   );
 
-  const openAdd = () => {
-    setBuddyFshTitle('');
-    setBuddyFshDetails('');
-    setModalVisible(true);
+  const buddyTrckrOpenAdd = () => {
+    setBuddyTrckrTitle('');
+    setBuddyTrckrDetails('');
+    setBuddyTrckrModalVisible(true);
   };
 
-  const closeModal = () => {
-    setModalVisible(false);
-    setBuddyFshTitle('');
-    setBuddyFshDetails('');
+  const buddyTrckrCloseModal = () => {
+    setBuddyTrckrModalVisible(false);
+    setBuddyTrckrTitle('');
+    setBuddyTrckrDetails('');
   };
 
-  const buddyFshHandleShareNote = (note: NoteItem) => {
-    const message = [note.title, note.date, note.details]
+  const buddyTrckrHandleShareNote = (buddyTrckrNote: NoteItem) => {
+    const buddyTrckrMessage = [
+      buddyTrckrNote.title,
+      buddyTrckrNote.date,
+      buddyTrckrNote.details,
+    ]
       .filter(Boolean)
       .join('\n\n');
-    Share.share({ message, title: note.title });
+
+    Share.share({
+      message: buddyTrckrMessage,
+      title: buddyTrckrNote.title,
+    });
   };
 
-  const buddyFshHandleSaveNote = () => {
-    const t = buddyFshTitle.trim();
-    if (!t) return;
-    const now = new Date();
-    const newNote: NoteItem = {
+  const buddyTrckrHandleSaveNote = () => {
+    const buddyTrckrTrimmedTitle = buddyTrckrTitle.trim();
+    if (!buddyTrckrTrimmedTitle) return;
+
+    const buddyTrckrNow = new Date();
+    const buddyTrckrNewNote: NoteItem = {
       id: Date.now().toString(),
-      title: t,
-      details: buddyFshDetails.trim(),
-      date: formatDate(now),
+      title: buddyTrckrTrimmedTitle,
+      details: buddyTrckrDetails.trim(),
+      date: formatDate(buddyTrckrNow),
     };
-    setBuddyFshNotes(prev => {
-      const next = [newNote, ...prev];
-      buddyFshSaveNotes(next).then(() => {
+
+    setBuddyTrckrNotes(buddyTrckrPrev => {
+      const buddyTrckrNext = [buddyTrckrNewNote, ...buddyTrckrPrev];
+      buddyTrckrSaveNotes(buddyTrckrNext).then(() => {
         Toast.show({
           type: 'success',
           text1: 'Note successfully saved!',
@@ -145,51 +169,59 @@ const FishermansTrackerNotes: React.FC = () => {
           visibilityTime: 2000,
         });
       });
-      return next;
+      return buddyTrckrNext;
     });
-    closeModal();
+
+    buddyTrckrCloseModal();
   };
 
-  const buddyFshConfirmDelete = (id: string) => {
+  const buddyTrckrConfirmDelete = (buddyTrckrId: string) => {
     Alert.alert('Remove Note?', 'This action cannot be undone', [
       { text: 'Cancel', style: 'cancel' },
       {
         text: 'Delete',
         style: 'destructive',
         onPress: () => {
-          setBuddyFshNotes(prev => {
-            const next = prev.filter(n => n.id !== id);
-            buddyFshSaveNotes(next);
-            return next;
+          setBuddyTrckrNotes(buddyTrckrPrev => {
+            const buddyTrckrNext = buddyTrckrPrev.filter(
+              buddyTrckrNote => buddyTrckrNote.id !== buddyTrckrId,
+            );
+            buddyTrckrSaveNotes(buddyTrckrNext);
+            return buddyTrckrNext;
           });
         },
       },
     ]);
   };
 
-  const renderNoteCard = ({ item }: { item: NoteItem }) => (
-    <View style={styles.noteCard}>
+  const buddyTrckrRenderNoteCard = ({
+    item: buddyTrckrItem,
+  }: {
+    item: NoteItem;
+  }) => (
+    <View style={styles.buddyTrckrNoteCard}>
       <TouchableOpacity
-        style={styles.noteCardArrow}
-        onPress={() => buddyFshHandleShareNote(item)}
+        style={styles.buddyTrckrNoteCardArrow}
+        onPress={() => buddyTrckrHandleShareNote(buddyTrckrItem)}
         activeOpacity={0.8}
       >
         <Image
           source={require('../FishermansTrackerAssets/images/share.png')}
-          style={styles.noteCardArrowImage}
+          style={styles.buddyTrckrNoteCardArrowImage}
         />
       </TouchableOpacity>
+
       <TouchableOpacity
         activeOpacity={1}
-        onLongPress={() => buddyFshConfirmDelete(item.id)}
-        style={styles.noteCardContent}
+        onLongPress={() => buddyTrckrConfirmDelete(buddyTrckrItem.id)}
+        style={styles.buddyTrckrNoteCardContent}
       >
-        <Text style={styles.noteCardTitle} numberOfLines={1}>
-          {item.title}
+        <Text style={styles.buddyTrckrNoteCardTitle} numberOfLines={1}>
+          {buddyTrckrItem.title}
         </Text>
-        <Text style={styles.noteCardDate}>{item.date}</Text>
-        <Text style={styles.noteCardDetails} numberOfLines={3}>
-          {item.details ||
+        <Text style={styles.buddyTrckrNoteCardDate}>{buddyTrckrItem.date}</Text>
+        <Text style={styles.buddyTrckrNoteCardDetails} numberOfLines={3}>
+          {buddyTrckrItem.details ||
             "Note down details you'd like to remember for next time..."}
         </Text>
       </TouchableOpacity>
@@ -199,72 +231,74 @@ const FishermansTrackerNotes: React.FC = () => {
   return (
     <ImageBackground
       source={require('../FishermansTrackerAssets/images/mainbg.png')}
-      style={styles.container}
+      style={styles.buddyTrckrContainer}
     >
       <ScrollView
         contentContainerStyle={{ flexGrow: 1 }}
         showsVerticalScrollIndicator={false}
         bounces={false}
       >
-        <View style={styles.headerContainer}>
+        <View style={styles.buddyTrckrHeaderContainer}>
           <Image
             source={require('../FishermansTrackerAssets/images/header.png')}
-            style={styles.header}
+            style={styles.buddyTrckrHeader}
           />
           <TouchableOpacity
-            style={styles.profileButton}
+            style={styles.buddyTrckrProfileButton}
             activeOpacity={0.8}
-            onPress={() => navigation.navigate('FishermansTrackerProfile')}
+            onPress={() =>
+              buddyTrckrNavigation.navigate('FishermansTrackerProfile')
+            }
           >
             <Image
               source={require('../FishermansTrackerAssets/images/settings.png')}
             />
-            <Text style={styles.profileButtonText}>
-              Hi, {profileNickname || 'there'}!
+            <Text style={styles.buddyTrckrProfileButtonText}>
+              Hi, {buddyTrckrProfileNickname || 'there'}!
             </Text>
           </TouchableOpacity>
           <Image
             source={require('../FishermansTrackerAssets/images/headerImg.png')}
-            style={styles.headerImg}
+            style={styles.buddyTrckrHeaderImg}
           />
         </View>
 
-        <View style={styles.content}>
-          <Text style={styles.screenTitle}>Fishing Notes</Text>
+        <View style={styles.buddyTrckrContent}>
+          <Text style={styles.buddyTrckrScreenTitle}>Fishing Notes</Text>
 
           <TouchableOpacity
-            onPress={openAdd}
+            onPress={buddyTrckrOpenAdd}
             activeOpacity={0.8}
-            style={styles.addButtonContainer}
+            style={styles.buddyTrckrAddButtonContainer}
           >
             <LinearGradient
               colors={['#A2E8D5', '#FFFAD0', '#2CCCE7']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
-              style={styles.addButton}
+              style={styles.buddyTrckrAddButton}
             >
-              <Text style={styles.addButtonPlus}>+</Text>
-              <Text style={styles.addButtonText}>Add note</Text>
+              <Text style={styles.buddyTrckrAddButtonPlus}>+</Text>
+              <Text style={styles.buddyTrckrAddButtonText}>Add note</Text>
             </LinearGradient>
           </TouchableOpacity>
 
-          <View style={styles.listGradient}>
+          <View style={styles.buddyTrckrListGradient}>
             <FlatList
-              data={buddyFshNotes}
-              renderItem={renderNoteCard}
+              data={buddyTrckrNotes}
+              renderItem={buddyTrckrRenderNoteCard}
               scrollEnabled={false}
-              keyExtractor={item => item.id}
-              contentContainerStyle={styles.listContent}
+              keyExtractor={buddyTrckrItem => buddyTrckrItem.id}
+              contentContainerStyle={styles.buddyTrckrListContent}
               showsVerticalScrollIndicator={false}
             />
           </View>
         </View>
 
         <Modal
-          visible={modalVisible}
+          visible={buddyTrckrModalVisible}
           transparent
           animationType="fade"
-          onRequestClose={closeModal}
+          onRequestClose={buddyTrckrCloseModal}
           statusBarTranslucent={Platform.OS === 'android'}
         >
           {Platform.OS === 'ios' && (
@@ -280,63 +314,72 @@ const FishermansTrackerNotes: React.FC = () => {
               }}
             />
           )}
+
           <TouchableOpacity
-            style={styles.modalBackdrop}
+            style={styles.buddyTrckrModalBackdrop}
             activeOpacity={1}
-            onPress={closeModal}
+            onPress={buddyTrckrCloseModal}
           >
             <TouchableOpacity
               activeOpacity={1}
-              onPress={e => e.stopPropagation()}
-              style={styles.modalCard}
+              onPress={buddyTrckrEvent => buddyTrckrEvent.stopPropagation()}
+              style={styles.buddyTrckrModalCard}
             >
-              <Text style={styles.modalTitle}>Add Note</Text>
+              <Text style={styles.buddyTrckrModalTitle}>Add Note</Text>
+
               <TextInput
-                style={styles.modalInput}
+                style={styles.buddyTrckrModalInput}
                 placeholder="What would you call today's adventure?"
                 placeholderTextColor="#FFFFFF80"
-                value={buddyFshTitle}
-                onChangeText={setBuddyFshTitle}
+                value={buddyTrckrTitle}
+                onChangeText={setBuddyTrckrTitle}
               />
+
               <TextInput
-                style={[styles.modalInput, styles.modalInputMultiline]}
+                style={[
+                  styles.buddyTrckrModalInput,
+                  styles.buddyTrckrModalInputMultiline,
+                ]}
                 placeholder="Note down details you'd like to remember for next time..."
                 placeholderTextColor="#FFFFFF80"
-                value={buddyFshDetails}
-                onChangeText={setBuddyFshDetails}
+                value={buddyTrckrDetails}
+                onChangeText={setBuddyTrckrDetails}
                 multiline
               />
+
               <TouchableOpacity
-                onPress={buddyFshHandleSaveNote}
+                onPress={buddyTrckrHandleSaveNote}
                 activeOpacity={0.8}
-                style={styles.saveButtonContainer}
-                disabled={!buddyFshTitle.trim()}
+                style={styles.buddyTrckrSaveButtonContainer}
+                disabled={!buddyTrckrTitle.trim()}
               >
                 <LinearGradient
                   colors={
-                    buddyFshTitle.trim()
+                    buddyTrckrTitle.trim()
                       ? ['#A2E8D5', '#FFFAD0', '#2CCCE7']
                       : ['#97C5B8', '#97C5B8']
                   }
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
-                  style={styles.saveButton}
+                  style={styles.buddyTrckrSaveButton}
                 >
                   <Text
                     style={[
-                      styles.saveButtonText,
-                      !buddyFshTitle.trim() && styles.buttonTextDisabled,
+                      styles.buddyTrckrSaveButtonText,
+                      !buddyTrckrTitle.trim() &&
+                        styles.buddyTrckrButtonTextDisabled,
                     ]}
                   >
                     Save Note
                   </Text>
                 </LinearGradient>
               </TouchableOpacity>
+
               <TouchableOpacity
-                onPress={closeModal}
-                style={styles.cancelButton}
+                onPress={buddyTrckrCloseModal}
+                style={styles.buddyTrckrCancelButton}
               >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
+                <Text style={styles.buddyTrckrCancelButtonText}>Cancel</Text>
               </TouchableOpacity>
             </TouchableOpacity>
           </TouchableOpacity>
@@ -347,25 +390,25 @@ const FishermansTrackerNotes: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
+  buddyTrckrContainer: {
     flex: 1,
   },
-  headerContainer: {
+  buddyTrckrHeaderContainer: {
     width: '100%',
     marginBottom: 8,
   },
-  header: {
+  buddyTrckrHeader: {
     width: '100%',
     height: 156,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
   },
-  headerImg: {
+  buddyTrckrHeaderImg: {
     position: 'absolute',
     right: 20,
     bottom: -10,
   },
-  profileButton: {
+  buddyTrckrProfileButton: {
     position: 'absolute',
     left: 15,
     top: 50,
@@ -379,28 +422,28 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#fff',
   },
-  profileButtonText: {
+  buddyTrckrProfileButtonText: {
     fontSize: 16,
     fontWeight: '500',
     color: '#fff',
   },
-  content: {
+  buddyTrckrContent: {
     flex: 1,
     paddingHorizontal: 20,
     paddingBottom: 100,
   },
-  screenTitle: {
+  buddyTrckrScreenTitle: {
     fontSize: 20,
     fontWeight: '700',
     color: '#fff',
     marginBottom: 16,
     marginTop: 10,
   },
-  addButtonContainer: {
+  buddyTrckrAddButtonContainer: {
     width: '100%',
     marginBottom: 20,
   },
-  addButton: {
+  buddyTrckrAddButton: {
     width: '100%',
     height: 51,
     borderRadius: 60,
@@ -409,24 +452,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  addButtonPlus: {
+  buddyTrckrAddButtonPlus: {
     fontSize: 22,
     fontWeight: '700',
     color: '#007083',
   },
-  addButtonText: {
+  buddyTrckrAddButtonText: {
     fontSize: 16,
     fontWeight: '500',
     color: '#007083',
   },
-  listGradient: {
+  buddyTrckrListGradient: {
     flex: 1,
     backgroundColor: 'transparent',
   },
-  listContent: {
+  buddyTrckrListContent: {
     paddingBottom: 20,
   },
-  noteCard: {
+  buddyTrckrNoteCard: {
     width: '100%',
     backgroundColor: '#286E42',
     borderRadius: 20,
@@ -436,7 +479,7 @@ const styles = StyleSheet.create({
     borderColor: '#fff',
     position: 'relative',
   },
-  noteCardArrow: {
+  buddyTrckrNoteCardArrow: {
     position: 'absolute',
     right: 12,
     top: 12,
@@ -448,37 +491,37 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 1,
   },
-  noteCardArrowImage: {
+  buddyTrckrNoteCardArrowImage: {
     width: 20,
     height: 20,
   },
-  noteCardContent: {
+  buddyTrckrNoteCardContent: {
     paddingRight: 44,
   },
-  noteCardTitle: {
+  buddyTrckrNoteCardTitle: {
     fontSize: 18,
     fontWeight: '600',
     color: '#fff',
     marginBottom: 8,
   },
-  noteCardDate: {
+  buddyTrckrNoteCardDate: {
     fontSize: 14,
     color: '#FFC813',
     marginBottom: 8,
   },
-  noteCardDetails: {
+  buddyTrckrNoteCardDetails: {
     fontSize: 16,
     color: '#fff',
     lineHeight: 20,
   },
-  modalBackdrop: {
+  buddyTrckrModalBackdrop: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.21)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
   },
-  modalCard: {
+  buddyTrckrModalCard: {
     width: '100%',
     maxWidth: 400,
     backgroundColor: '#286E42',
@@ -487,14 +530,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#fff',
   },
-  modalTitle: {
+  buddyTrckrModalTitle: {
     fontSize: 24,
     fontWeight: '700',
     color: '#fff',
     marginBottom: 20,
     textAlign: 'center',
   },
-  modalInput: {
+  buddyTrckrModalInput: {
     width: '100%',
     paddingVertical: 16,
     backgroundColor: '#799930',
@@ -504,35 +547,35 @@ const styles = StyleSheet.create({
     color: '#fff',
     marginBottom: 16,
   },
-  modalInputMultiline: {
+  buddyTrckrModalInputMultiline: {
     borderRadius: 20,
     minHeight: 150,
     textAlignVertical: 'top',
   },
-  saveButtonContainer: {
+  buddyTrckrSaveButtonContainer: {
     width: '100%',
     marginBottom: 12,
   },
-  saveButton: {
+  buddyTrckrSaveButton: {
     width: '100%',
     height: 51,
     borderRadius: 60,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  saveButtonText: {
+  buddyTrckrSaveButtonText: {
     fontSize: 16,
     fontWeight: '500',
     color: '#007083',
   },
-  buttonTextDisabled: {
+  buddyTrckrButtonTextDisabled: {
     color: '#657375',
   },
-  cancelButton: {
+  buddyTrckrCancelButton: {
     alignSelf: 'center',
     paddingVertical: 8,
   },
-  cancelButtonText: {
+  buddyTrckrCancelButtonText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#fff',

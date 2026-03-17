@@ -28,23 +28,28 @@ import LinearGradient from 'react-native-linear-gradient';
 import type { LocationItem } from './FishermansTrackerLocations';
 import type { RecipeItem } from './FishermansTrackerRecipes';
 
-const bgPath = require('../FishermansTrackerAssets/images/mainbg.png');
-const headerPath = require('../FishermansTrackerAssets/images/header.png');
-const bColors = ['#A2E8D5', '#FFFAD0', '#2CCCE7'];
-const primYellow = '#FFC813';
-const white = '#fff';
-const green = '#286E42';
-const blue = '#007083';
+const buddyTrckrBgPath = require('../FishermansTrackerAssets/images/mainbg.png');
+const buddyTrckrHeaderPath = require('../FishermansTrackerAssets/images/header.png');
+const buddyTrckrBColors = ['#A2E8D5', '#FFFAD0', '#2CCCE7'];
+const buddyTrckrPrimYellow = '#FFC813';
+const buddyTrckrWhite = '#fff';
+const buddyTrckrGreen = '#286E42';
+const buddyTrckrBlue = '#007083';
 
 const FishermansTrackerHome: React.FC = () => {
-  const navigation = useNavigation();
-  const [buddyFshrmLocations, setBuddyFshrmLocations] = useState<
+  const buddyTrckrNavigation = useNavigation();
+  const [buddyTrckrLocations, setBuddyTrckrLocations] = useState<
     LocationItem[]
   >([]);
-  const [savedRecipeIds, setSavedRecipeIds] = useState<string[]>([]);
-  const [profileNickname, setProfileNickname] = useState<string | null>(null);
+  const [buddyTrckrSavedRecipeIds, setBuddyTrckrSavedRecipeIds] = useState<
+    string[]
+  >([]);
+  const [buddyTrckrProfileNickname, setBuddyTrckrProfileNickname] = useState<
+    string | null
+  >(null);
 
-  const { setIsEnabledNotifications } = useStorage();
+  const { setIsEnabledNotifications: buddyTrckrSetIsEnabledNotifications } =
+    useStorage();
 
   useFocusEffect(
     useCallback(() => {
@@ -60,12 +65,17 @@ const FishermansTrackerHome: React.FC = () => {
 
   const buddyTrckrLoadNotifications = async () => {
     try {
-      const notifValue = await AsyncStorage.getItem(NOTIFICATIONS_KEY);
+      const buddyTrckrNotifValue = await AsyncStorage.getItem(
+        NOTIFICATIONS_KEY,
+      );
 
-      const parsedJSON = notifValue ? JSON.parse(notifValue) : null;
+      const buddyTrckrParsedJSON = buddyTrckrNotifValue
+        ? JSON.parse(buddyTrckrNotifValue)
+        : null;
 
-      if (typeof parsedJSON === 'boolean')
-        setIsEnabledNotifications(parsedJSON);
+      if (typeof buddyTrckrParsedJSON === 'boolean') {
+        buddyTrckrSetIsEnabledNotifications(buddyTrckrParsedJSON);
+      }
     } catch {
       console.log('catch err');
     }
@@ -73,259 +83,320 @@ const FishermansTrackerHome: React.FC = () => {
 
   const buddyTrckrLoadData = async () => {
     try {
-      const [locRaw, profileRaw, recipesRaw] = await Promise.all([
-        AsyncStorage.getItem(LOCATIONS_STORAGE_KEY),
-        AsyncStorage.getItem(PROFILE_STORAGE_KEY),
-        AsyncStorage.getItem(SAVED_RECIPES_KEY),
-      ]);
-      if (locRaw) {
-        const parsed = JSON.parse(locRaw) as LocationItem[];
-        setBuddyFshrmLocations(Array.isArray(parsed) ? parsed : []);
-      } else {
-        setBuddyFshrmLocations([]);
-      }
-      if (profileRaw) {
-        const parsed = JSON.parse(profileRaw) as { nickname?: string };
-        setProfileNickname(
-          typeof parsed?.nickname === 'string' ? parsed.nickname : null,
+      const [buddyTrckrLocRaw, buddyTrckrProfileRaw, buddyTrckrRecipesRaw] =
+        await Promise.all([
+          AsyncStorage.getItem(LOCATIONS_STORAGE_KEY),
+          AsyncStorage.getItem(PROFILE_STORAGE_KEY),
+          AsyncStorage.getItem(SAVED_RECIPES_KEY),
+        ]);
+
+      if (buddyTrckrLocRaw) {
+        const buddyTrckrParsed = JSON.parse(buddyTrckrLocRaw) as LocationItem[];
+        setBuddyTrckrLocations(
+          Array.isArray(buddyTrckrParsed) ? buddyTrckrParsed : [],
         );
       } else {
-        setProfileNickname(null);
+        setBuddyTrckrLocations([]);
       }
-      if (recipesRaw) {
-        const arr = JSON.parse(recipesRaw) as string[];
-        setSavedRecipeIds(Array.isArray(arr) ? arr : []);
+
+      if (buddyTrckrProfileRaw) {
+        const buddyTrckrParsed = JSON.parse(buddyTrckrProfileRaw) as {
+          nickname?: string;
+        };
+        setBuddyTrckrProfileNickname(
+          typeof buddyTrckrParsed?.nickname === 'string'
+            ? buddyTrckrParsed.nickname
+            : null,
+        );
       } else {
-        setSavedRecipeIds([]);
+        setBuddyTrckrProfileNickname(null);
+      }
+
+      if (buddyTrckrRecipesRaw) {
+        const buddyTrckrArr = JSON.parse(buddyTrckrRecipesRaw) as string[];
+        setBuddyTrckrSavedRecipeIds(
+          Array.isArray(buddyTrckrArr) ? buddyTrckrArr : [],
+        );
+      } else {
+        setBuddyTrckrSavedRecipeIds([]);
       }
     } catch {
-      setBuddyFshrmLocations([]);
-      setSavedRecipeIds([]);
-      setProfileNickname(null);
+      setBuddyTrckrLocations([]);
+      setBuddyTrckrSavedRecipeIds([]);
+      setBuddyTrckrProfileNickname(null);
     }
   };
 
-  const totalTrips = buddyFshrmLocations.length;
-  const totalCatches = buddyFshrmLocations.reduce(
-    (sum, loc) => sum + (loc.catches?.length ?? 0),
+  const buddyTrckrTotalTrips = buddyTrckrLocations.length;
+  const buddyTrckrTotalCatches = buddyTrckrLocations.reduce(
+    (buddyTrckrSum, buddyTrckrLoc) =>
+      buddyTrckrSum + (buddyTrckrLoc.catches?.length ?? 0),
     0,
   );
-  const biggestCatchKg = getBiggestCatchKg(buddyFshrmLocations);
+  const buddyTrckrBiggestCatchKg = getBiggestCatchKg(buddyTrckrLocations);
 
-  const recentLocations = buddyFshrmLocations.slice(0, 2);
-  const savedRecipes: RecipeItem[] = savedRecipeIds
-    .map(id => RECIPES_DATA.find(r => r.id === id))
-    .filter((r): r is RecipeItem => r != null)
+  const buddyTrckrRecentLocations = buddyTrckrLocations.slice(0, 2);
+  const buddyTrckrSavedRecipes: RecipeItem[] = buddyTrckrSavedRecipeIds
+    .map(buddyTrckrId =>
+      RECIPES_DATA.find(
+        buddyTrckrRecipe => buddyTrckrRecipe.id === buddyTrckrId,
+      ),
+    )
+    .filter(
+      (buddyTrckrRecipe): buddyTrckrRecipe is RecipeItem =>
+        buddyTrckrRecipe != null,
+    )
     .slice(0, 2);
 
-  const openBuddyFshrmProfile = () => {
-    (navigation as { navigate: (s: string) => void }).navigate(
+  const buddyTrckrOpenProfile = () => {
+    (buddyTrckrNavigation as { navigate: (s: string) => void }).navigate(
       'FishermansTrackerProfile',
     );
   };
 
-  const openBuddyFshrmMap = () => {
-    (navigation as { navigate: (s: string) => void }).navigate(
+  const buddyTrckrOpenMap = () => {
+    (buddyTrckrNavigation as { navigate: (s: string) => void }).navigate(
       'FishermansTrackerMap',
     );
   };
 
-  const openBuddyFshrmLocationsTab = () => {
-    (navigation as { navigate: (s: string) => void }).navigate(
+  const buddyTrckrOpenLocationsTab = () => {
+    (buddyTrckrNavigation as { navigate: (s: string) => void }).navigate(
       'FishermansTrackerLocations',
     );
   };
 
-  const openBuddyFshrmRecipesTab = () => {
-    (navigation as { navigate: (s: string) => void }).navigate(
+  const buddyTrckrOpenRecipesTab = () => {
+    (buddyTrckrNavigation as { navigate: (s: string) => void }).navigate(
       'FishermansTrackerRecipes',
     );
   };
 
-  const openLocationDetail = (item: LocationItem) => {
+  const buddyTrckrOpenLocationDetail = (buddyTrckrItem: LocationItem) => {
     (
-      navigation as {
+      buddyTrckrNavigation as {
         navigate: (s: string, p: { locationId: string }) => void;
       }
-    ).navigate('FishermansTrackerLocationDetail', { locationId: item.id });
+    ).navigate('FishermansTrackerLocationDetail', {
+      locationId: buddyTrckrItem.id,
+    });
   };
 
   return (
-    <ImageBackground source={bgPath} style={styles.fshCnt}>
+    <ImageBackground source={buddyTrckrBgPath} style={styles.buddyTrckrFshCnt}>
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={styles.buddyTrckrScrollContent}
         showsVerticalScrollIndicator={false}
         bounces={false}
       >
-        <View style={styles.headerFshCnt}>
-          <Image source={headerPath} style={styles.headerFsh} />
+        <View style={styles.buddyTrckrHeaderFshCnt}>
+          <Image
+            source={buddyTrckrHeaderPath}
+            style={styles.buddyTrckrHeaderFsh}
+          />
           <TouchableOpacity
-            style={styles.profButton}
+            style={styles.buddyTrckrProfButton}
             activeOpacity={0.8}
-            onPress={openBuddyFshrmProfile}
+            onPress={buddyTrckrOpenProfile}
           >
             <Image
               source={require('../FishermansTrackerAssets/images/settings.png')}
             />
-            <Text style={styles.profileButtonText}>
-              Hi, {profileNickname || 'there'}!
+            <Text style={styles.buddyTrckrProfileButtonText}>
+              Hi, {buddyTrckrProfileNickname || 'there'}!
             </Text>
           </TouchableOpacity>
           <Image
             source={require('../FishermansTrackerAssets/images/headerImg.png')}
-            style={styles.headerImg}
+            style={styles.buddyTrckrHeaderImg}
           />
         </View>
 
-        <View style={styles.content}>
-          <Text style={styles.sectionTitle}>Quick Stats</Text>
-          <View style={styles.statsRow}>
-            <View style={styles.statCard}>
+        <View style={styles.buddyTrckrContent}>
+          <Text style={styles.buddyTrckrSectionTitle}>Quick Stats</Text>
+          <View style={styles.buddyTrckrStatsRow}>
+            <View style={styles.buddyTrckrStatCard}>
               <View
-                style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 6,
+                }}
               >
                 <Image
                   source={require('../FishermansTrackerAssets/images/trips.png')}
                 />
-                <Text style={styles.statValue}>
-                  {totalTrips > 0 ? String(totalTrips) : '-'}
+                <Text style={styles.buddyTrckrStatValue}>
+                  {buddyTrckrTotalTrips > 0
+                    ? String(buddyTrckrTotalTrips)
+                    : '-'}
                 </Text>
               </View>
-              <Text style={styles.statLabel}>Total Trips</Text>
+              <Text style={styles.buddyTrckrStatLabel}>Total Trips</Text>
             </View>
-            <View style={styles.statCard}>
+
+            <View style={styles.buddyTrckrStatCard}>
               <View
-                style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 6,
+                }}
               >
                 <Image
                   source={require('../FishermansTrackerAssets/images/catches.png')}
                 />
-                <Text style={styles.statValue}>
-                  {totalCatches > 0 ? String(totalCatches) : '-'}
+                <Text style={styles.buddyTrckrStatValue}>
+                  {buddyTrckrTotalCatches > 0
+                    ? String(buddyTrckrTotalCatches)
+                    : '-'}
                 </Text>
               </View>
-              <Text style={styles.statLabel}>Total Catches</Text>
+              <Text style={styles.buddyTrckrStatLabel}>Total Catches</Text>
             </View>
-            <View style={styles.statCard}>
+
+            <View style={styles.buddyTrckrStatCard}>
               <View
-                style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 6,
+                }}
               >
                 <Image
                   source={require('../FishermansTrackerAssets/images/biggestcatch.png')}
                 />
-                <Text style={styles.statValue}>
-                  {biggestCatchKg != null ? `${biggestCatchKg} kg` : '-'}
+                <Text style={styles.buddyTrckrStatValue}>
+                  {buddyTrckrBiggestCatchKg != null
+                    ? `${buddyTrckrBiggestCatchKg} kg`
+                    : '-'}
                 </Text>
               </View>
-              <Text style={styles.statLabel}>Biggest Catch</Text>
+              <Text style={styles.buddyTrckrStatLabel}>Biggest Catch</Text>
             </View>
           </View>
 
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Recent fish locations</Text>
-              {buddyFshrmLocations.length > 0 && (
+          <View style={styles.buddyTrckrSection}>
+            <View style={styles.buddyTrckrSectionHeader}>
+              <Text style={styles.buddyTrckrSectionTitle}>
+                Recent fish locations
+              </Text>
+              {buddyTrckrLocations.length > 0 && (
                 <TouchableOpacity
-                  onPress={openBuddyFshrmLocationsTab}
-                  style={styles.seeAllButton}
+                  onPress={buddyTrckrOpenLocationsTab}
+                  style={styles.buddyTrckrSeeAllButton}
                   activeOpacity={0.8}
                 >
-                  <Text style={styles.seeAllText}>See All</Text>
+                  <Text style={styles.buddyTrckrSeeAllText}>See All</Text>
                 </TouchableOpacity>
               )}
             </View>
-            {recentLocations.map(item => (
+
+            {buddyTrckrRecentLocations.map(buddyTrckrItem => (
               <TouchableOpacity
-                key={item.id}
-                style={styles.locationCard}
+                key={buddyTrckrItem.id}
+                style={styles.buddyTrckrLocationCard}
                 activeOpacity={0.9}
-                onPress={() => openLocationDetail(item)}
+                onPress={() => buddyTrckrOpenLocationDetail(buddyTrckrItem)}
               >
-                <View style={styles.locationCardIcon}>
+                <View style={styles.buddyTrckrLocationCardIcon}>
                   <Image
                     source={require('../FishermansTrackerAssets/images/anchor.png')}
                   />
                 </View>
-                <View style={styles.locationCardBody}>
-                  <Text style={styles.locationCardTitle} numberOfLines={1}>
-                    {item.catches?.[0]?.title ?? item.title}
+                <View style={styles.buddyTrckrLocationCardBody}>
+                  <Text
+                    style={styles.buddyTrckrLocationCardTitle}
+                    numberOfLines={1}
+                  >
+                    {buddyTrckrItem.catches?.[0]?.title ?? buddyTrckrItem.title}
                   </Text>
-                  <Text style={styles.locationCardDate}>{item.date}</Text>
+                  <Text style={styles.buddyTrckrLocationCardDate}>
+                    {buddyTrckrItem.date}
+                  </Text>
                 </View>
               </TouchableOpacity>
             ))}
+
             <TouchableOpacity
-              onPress={openBuddyFshrmMap}
+              onPress={buddyTrckrOpenMap}
               activeOpacity={0.8}
-              style={styles.addButtonContainer}
+              style={styles.buddyTrckrAddButtonContainer}
             >
               <LinearGradient
-                colors={bColors}
+                colors={buddyTrckrBColors}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
-                style={styles.addButton}
+                style={styles.buddyTrckrAddButton}
               >
                 <Image
                   source={require('../FishermansTrackerAssets/images/addcatch.png')}
                 />
-                <Text style={styles.addButtonText}>Add location</Text>
+                <Text style={styles.buddyTrckrAddButtonText}>Add location</Text>
               </LinearGradient>
             </TouchableOpacity>
           </View>
 
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Your favorite fish recipes</Text>
-            {savedRecipes.map(item => (
+          <View style={styles.buddyTrckrSection}>
+            <Text style={styles.buddyTrckrSectionTitle}>
+              Your favorite fish recipes
+            </Text>
+
+            {buddyTrckrSavedRecipes.map(buddyTrckrItem => (
               <TouchableOpacity
-                key={item.id}
-                style={styles.recipeCard}
+                key={buddyTrckrItem.id}
+                style={styles.buddyTrckrRecipeCard}
                 activeOpacity={0.9}
-                onPress={openBuddyFshrmRecipesTab}
+                onPress={buddyTrckrOpenRecipesTab}
               >
-                <View style={styles.recipeCardLeft}>
+                <View style={styles.buddyTrckrRecipeCardLeft}>
                   <Image
                     source={require('../FishermansTrackerAssets/images/recipes.png')}
                   />
                 </View>
-                <View style={styles.recipeCardBody}>
-                  <Text style={styles.recipeCardTitle} numberOfLines={2}>
-                    {item.title}
+                <View style={styles.buddyTrckrRecipeCardBody}>
+                  <Text
+                    style={styles.buddyTrckrRecipeCardTitle}
+                    numberOfLines={2}
+                  >
+                    {buddyTrckrItem.title}
                   </Text>
-                  <View style={styles.recipeTags}>
-                    <View style={styles.recipeTag}>
-                      <Text style={styles.recipeTagText}>
-                        Servings: {item.servings}
+                  <View style={styles.buddyTrckrRecipeTags}>
+                    <View style={styles.buddyTrckrRecipeTag}>
+                      <Text style={styles.buddyTrckrRecipeTagText}>
+                        Servings: {buddyTrckrItem.servings}
                       </Text>
                     </View>
-                    <View style={styles.recipeTag}>
-                      <Text style={styles.recipeTagText}>
-                        Time: ~{item.time} min
+                    <View style={styles.buddyTrckrRecipeTag}>
+                      <Text style={styles.buddyTrckrRecipeTagText}>
+                        Time: ~{buddyTrckrItem.time} min
                       </Text>
                     </View>
                   </View>
                 </View>
-                <View style={styles.bookmarkButton}>
+                <View style={styles.buddyTrckrBookmarkButton}>
                   <Image
                     source={require('../FishermansTrackerAssets/images/saved.png')}
                   />
                 </View>
               </TouchableOpacity>
             ))}
+
             <TouchableOpacity
-              onPress={openBuddyFshrmRecipesTab}
+              onPress={buddyTrckrOpenRecipesTab}
               activeOpacity={0.8}
-              style={styles.addButtonContainer}
+              style={styles.buddyTrckrAddButtonContainer}
             >
               <LinearGradient
-                colors={bColors}
+                colors={buddyTrckrBColors}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
-                style={styles.addButton}
+                style={styles.buddyTrckrAddButton}
               >
                 <Image
                   source={require('../FishermansTrackerAssets/images/addcatch.png')}
                 />
-                <Text style={styles.addButtonText}>Add recipe</Text>
+                <Text style={styles.buddyTrckrAddButtonText}>Add recipe</Text>
               </LinearGradient>
             </TouchableOpacity>
           </View>
@@ -336,33 +407,33 @@ const FishermansTrackerHome: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  fshCnt: {
+  buddyTrckrFshCnt: {
     flex: 1,
   },
-  scrollContent: {
+  buddyTrckrScrollContent: {
     flexGrow: 1,
     paddingBottom: 100,
   },
-  headerFshCnt: {
+  buddyTrckrHeaderFshCnt: {
     width: '100%',
     marginBottom: 8,
   },
-  headerFsh: {
+  buddyTrckrHeaderFsh: {
     width: '100%',
     height: 156,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
   },
-  headerImg: {
+  buddyTrckrHeaderImg: {
     position: 'absolute',
     right: 20,
     bottom: -10,
   },
-  profButton: {
+  buddyTrckrProfButton: {
     position: 'absolute',
     left: 15,
     top: 50,
-    backgroundColor: green,
+    backgroundColor: buddyTrckrGreen,
     paddingVertical: 10,
     paddingHorizontal: 14,
     borderRadius: 60,
@@ -370,105 +441,105 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
     borderWidth: 1,
-    borderColor: white,
+    borderColor: buddyTrckrWhite,
   },
-  profileButtonText: {
+  buddyTrckrProfileButtonText: {
     fontSize: 16,
     fontWeight: '500',
-    color: white,
+    color: buddyTrckrWhite,
   },
-  content: {
+  buddyTrckrContent: {
     flex: 1,
     paddingHorizontal: 20,
   },
-  sectionTitle: {
+  buddyTrckrSectionTitle: {
     fontSize: 20,
     fontWeight: '700',
-    color: white,
+    color: buddyTrckrWhite,
     marginBottom: 12,
     marginTop: 16,
   },
-  section: {
+  buddyTrckrSection: {
     marginBottom: 8,
   },
-  sectionHeader: {
+  buddyTrckrSectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 12,
     marginTop: 16,
   },
-  seeAllButton: {
-    backgroundColor: primYellow,
+  buddyTrckrSeeAllButton: {
+    backgroundColor: buddyTrckrPrimYellow,
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 60,
   },
-  seeAllText: {
+  buddyTrckrSeeAllText: {
     fontSize: 14,
     fontWeight: '600',
-    color: green,
+    color: buddyTrckrGreen,
   },
-  statsRow: {
+  buddyTrckrStatsRow: {
     flexDirection: 'row',
     gap: 10,
     marginBottom: 8,
   },
-  statCard: {
+  buddyTrckrStatCard: {
     flex: 1,
-    backgroundColor: green,
+    backgroundColor: buddyTrckrGreen,
     borderRadius: 20,
     padding: 12,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: white,
+    borderColor: buddyTrckrWhite,
   },
-  statValue: {
+  buddyTrckrStatValue: {
     fontSize: 20,
     fontWeight: '700',
-    color: primYellow,
+    color: buddyTrckrPrimYellow,
   },
-  statLabel: {
+  buddyTrckrStatLabel: {
     fontSize: 10,
-    color: white,
+    color: buddyTrckrWhite,
     fontWeight: '600',
     marginTop: 8,
   },
-  locationCard: {
+  buddyTrckrLocationCard: {
     flexDirection: 'row',
     alignItems: 'center',
     width: '100%',
-    backgroundColor: green,
+    backgroundColor: buddyTrckrGreen,
     borderRadius: 20,
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: white,
+    borderColor: buddyTrckrWhite,
   },
-  locationCardIcon: {
+  buddyTrckrLocationCardIcon: {
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
-  locationCardBody: {
+  buddyTrckrLocationCardBody: {
     flex: 1,
   },
-  locationCardTitle: {
+  buddyTrckrLocationCardTitle: {
     fontSize: 18,
     fontWeight: '700',
-    color: white,
+    color: buddyTrckrWhite,
     marginBottom: 4,
   },
-  locationCardDate: {
+  buddyTrckrLocationCardDate: {
     fontSize: 14,
-    color: primYellow,
+    color: buddyTrckrPrimYellow,
   },
-  addButtonContainer: {
+  buddyTrckrAddButtonContainer: {
     width: '100%',
     marginTop: 4,
     marginBottom: 8,
   },
-  addButton: {
+  buddyTrckrAddButton: {
     width: '100%',
     height: 51,
     borderRadius: 60,
@@ -477,55 +548,55 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  addButtonText: {
+  buddyTrckrAddButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: blue,
+    color: buddyTrckrBlue,
   },
-  recipeCard: {
+  buddyTrckrRecipeCard: {
     flexDirection: 'row',
     alignItems: 'center',
     width: '100%',
-    backgroundColor: green,
+    backgroundColor: buddyTrckrGreen,
     borderRadius: 20,
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: white,
+    borderColor: buddyTrckrWhite,
   },
-  recipeCardLeft: {
+  buddyTrckrRecipeCardLeft: {
     width: 48,
     height: 48,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
-  recipeCardBody: {
+  buddyTrckrRecipeCardBody: {
     flex: 1,
   },
-  recipeCardTitle: {
+  buddyTrckrRecipeCardTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: white,
+    color: buddyTrckrWhite,
     marginBottom: 8,
   },
-  recipeTags: {
+  buddyTrckrRecipeTags: {
     flexDirection: 'row',
     gap: 8,
     marginTop: 4,
   },
-  recipeTag: {
-    backgroundColor: primYellow,
+  buddyTrckrRecipeTag: {
+    backgroundColor: buddyTrckrPrimYellow,
     paddingVertical: 6,
     paddingHorizontal: 10,
     borderRadius: 60,
   },
-  recipeTagText: {
+  buddyTrckrRecipeTagText: {
     fontSize: 12,
     fontWeight: '500',
-    color: green,
+    color: buddyTrckrGreen,
   },
-  bookmarkButton: {
+  buddyTrckrBookmarkButton: {
     width: 36,
     height: 36,
     justifyContent: 'center',

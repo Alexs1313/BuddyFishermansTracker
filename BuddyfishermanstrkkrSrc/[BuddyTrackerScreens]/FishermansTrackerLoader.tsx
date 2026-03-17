@@ -15,18 +15,19 @@ import {
 import { StackList } from '../../Fishermanstackkrouts';
 
 const FishermansTrackerLoader: React.FC = () => {
-  const navigation =
+  const buddyTrckrNavigation =
     useNavigation<StackNavigationProp<StackList, 'FishermansTrackerLoader'>>();
-  const drive = useRef(new Animated.Value(0)).current;
 
-  const scale = drive.interpolate({
+  const buddyTrckrDrive = useRef(new Animated.Value(0)).current;
+
+  const buddyTrckrScale = buddyTrckrDrive.interpolate({
     inputRange: [0, 0.5, 1],
     outputRange: [0.96, 1.08, 0.96],
   });
 
   useEffect(() => {
-    const pulse = Animated.loop(
-      Animated.timing(drive, {
+    const buddyTrckrPulse = Animated.loop(
+      Animated.timing(buddyTrckrDrive, {
         toValue: 1,
         duration: 2200,
         easing: Easing.inOut(Easing.ease),
@@ -34,33 +35,41 @@ const FishermansTrackerLoader: React.FC = () => {
       }),
       { iterations: -1, resetBeforeIteration: true },
     );
-    pulse.start();
-    return () => pulse.stop();
-  }, [drive]);
+
+    buddyTrckrPulse.start();
+
+    return () => buddyTrckrPulse.stop();
+  }, [buddyTrckrDrive]);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      navigation.replace('FishermansTrackerOnboard');
+    const buddyTrckrTimer = setTimeout(() => {
+      buddyTrckrNavigation.replace('FishermansTrackerOnboard');
     }, 6000);
-    return () => clearTimeout(timer);
-  }, [navigation]);
+
+    return () => clearTimeout(buddyTrckrTimer);
+  }, [buddyTrckrNavigation]);
 
   return (
     <ImageBackground
       source={require('../FishermansTrackerAssets/images/loaderbg.png')}
-      style={styles.container}
+      style={styles.buddyTrckrContainer}
     >
-      <Animated.View style={[styles.imageWrap, { transform: [{ scale }] }]}>
+      <Animated.View
+        style={[
+          styles.buddyTrckrImageWrap,
+          { transform: [{ scale: buddyTrckrScale }] },
+        ]}
+      >
         {Platform.OS === 'ios' ? (
           <Image
             source={require('../FishermansTrackerAssets/images/loaderimg.png')}
-            style={styles.image}
+            style={styles.buddyTrckrImage}
             resizeMode="contain"
           />
         ) : (
           <Image
             source={require('../FishermansTrackerAssets/images/loaderimgandr.png')}
-            style={styles.image}
+            style={styles.buddyTrckrImage}
             resizeMode="contain"
           />
         )}
@@ -70,16 +79,16 @@ const FishermansTrackerLoader: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
+  buddyTrckrContainer: {
     flex: 1,
   },
-  imageWrap: {
+  buddyTrckrImageWrap: {
     width: '100%',
     height: '100%',
     alignItems: 'center',
     marginTop: 120,
   },
-  image: {
+  buddyTrckrImage: {
     width: 270,
     height: 270,
   },

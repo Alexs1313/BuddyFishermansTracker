@@ -35,98 +35,121 @@ import {
 type DetailRoute = RouteProp<StackList, 'FishermansTrackerLocationDetail'>;
 
 const FishermansTrackerLocationDetail: React.FC = () => {
-  const navigation =
+  const buddyTrckrNavigation =
     useNavigation<
       StackNavigationProp<StackList, 'FishermansTrackerLocationDetail'>
     >();
-  const route = useRoute<DetailRoute>();
-  const { locationId } = route.params;
-  const [location, setLocation] = useState<LocationItem | null>(null);
-  const [isSessionActive, setSessionActive] = useState(false);
-  const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
-  const [timerSeconds, setTimerSeconds] = useState(0);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const [weightUnit, setWeightUnit] = useState<'kg' | 'lb'>('kg');
+  const buddyTrckrRoute = useRoute<DetailRoute>();
+  const { locationId: buddyTrckrLocationId } = buddyTrckrRoute.params;
 
-  const loadBuddyProfileUnit = async () => {
+  const [buddyTrckrLocation, setBuddyTrckrLocation] =
+    useState<LocationItem | null>(null);
+  const [buddyTrckrIsSessionActive, setBuddyTrckrSessionActive] =
+    useState(false);
+  const [buddyTrckrSessionStartTime, setBuddyTrckrSessionStartTime] = useState<
+    number | null
+  >(null);
+  const [buddyTrckrTimerSeconds, setBuddyTrckrTimerSeconds] = useState(0);
+  const buddyTrckrTimerRef = useRef<ReturnType<typeof setInterval> | null>(
+    null,
+  );
+  const [buddyTrckrWeightUnit, setBuddyTrckrWeightUnit] = useState<'kg' | 'lb'>(
+    'kg',
+  );
+
+  const buddyTrckrLoadBuddyProfileUnit = async () => {
     try {
-      const raw = await AsyncStorage.getItem(PROFILE_STORAGE_KEY);
-      if (raw) {
-        const data = JSON.parse(raw) as { unit?: string };
-        setWeightUnit(data.unit === 'lb' ? 'lb' : 'kg');
+      const buddyTrckrRaw = await AsyncStorage.getItem(PROFILE_STORAGE_KEY);
+      if (buddyTrckrRaw) {
+        const buddyTrckrData = JSON.parse(buddyTrckrRaw) as { unit?: string };
+        setBuddyTrckrWeightUnit(buddyTrckrData.unit === 'lb' ? 'lb' : 'kg');
       } else {
-        setWeightUnit('kg');
+        setBuddyTrckrWeightUnit('kg');
       }
-    } catch (err) {
+    } catch (buddyTrckrErr) {
       if (__DEV__) {
         console.warn(
           'FishermansTrackerLocationDetail: loadProfileUnit failed',
-          err,
+          buddyTrckrErr,
         );
       }
-      setWeightUnit('kg');
+      setBuddyTrckrWeightUnit('kg');
     }
   };
 
-  const loadBuddyFsrmnLocation = async () => {
+  const buddyTrckrLoadBuddyFsrmnLocation = async () => {
     try {
-      const raw = await AsyncStorage.getItem(LOCATIONS_STORAGE_KEY);
-      if (raw) {
-        const list = JSON.parse(raw) as LocationItem[];
-        const found = list.find(l => l.id === locationId);
-        setLocation(found ?? null);
+      const buddyTrckrRaw = await AsyncStorage.getItem(LOCATIONS_STORAGE_KEY);
+      if (buddyTrckrRaw) {
+        const buddyTrckrList = JSON.parse(buddyTrckrRaw) as LocationItem[];
+        const buddyTrckrFound = buddyTrckrList.find(
+          buddyTrckrItem => buddyTrckrItem.id === buddyTrckrLocationId,
+        );
+        setBuddyTrckrLocation(buddyTrckrFound ?? null);
       }
-    } catch (err) {
+    } catch (buddyTrckrErr) {
       if (__DEV__) {
         console.warn(
           'FishermansTrackerLocationDetail: loadLocation failed',
-          err,
+          buddyTrckrErr,
         );
       }
-      setLocation(null);
+      setBuddyTrckrLocation(null);
     }
   };
 
   useFocusEffect(
     useCallback(() => {
-      loadBuddyProfileUnit();
-      loadBuddyFsrmnLocation();
-    }, [locationId]),
+      buddyTrckrLoadBuddyProfileUnit();
+      buddyTrckrLoadBuddyFsrmnLocation();
+    }, [buddyTrckrLocationId]),
   );
 
   useEffect(() => {
-    if (isSessionActive && sessionStartTime !== null) {
-      timerRef.current = setInterval(() => {
-        setTimerSeconds(Math.floor((Date.now() - sessionStartTime) / 1000));
+    if (buddyTrckrIsSessionActive && buddyTrckrSessionStartTime !== null) {
+      buddyTrckrTimerRef.current = setInterval(() => {
+        setBuddyTrckrTimerSeconds(
+          Math.floor((Date.now() - buddyTrckrSessionStartTime) / 1000),
+        );
       }, 1000);
     }
+
     return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
+      if (buddyTrckrTimerRef.current) {
+        clearInterval(buddyTrckrTimerRef.current);
+        buddyTrckrTimerRef.current = null;
       }
     };
-  }, [isSessionActive, sessionStartTime]);
+  }, [buddyTrckrIsSessionActive, buddyTrckrSessionStartTime]);
 
-  const saveLocation = async (updated: LocationItem) => {
-    setLocation(updated);
+  const buddyTrckrSaveLocation = async (buddyTrckrUpdated: LocationItem) => {
+    setBuddyTrckrLocation(buddyTrckrUpdated);
     try {
-      const raw = await AsyncStorage.getItem(LOCATIONS_STORAGE_KEY);
-      const list = raw ? (JSON.parse(raw) as LocationItem[]) : [];
-      const next = list.map(l => (l.id === updated.id ? updated : l));
-      await AsyncStorage.setItem(LOCATIONS_STORAGE_KEY, JSON.stringify(next));
-    } catch (err) {
+      const buddyTrckrRaw = await AsyncStorage.getItem(LOCATIONS_STORAGE_KEY);
+      const buddyTrckrList = buddyTrckrRaw
+        ? (JSON.parse(buddyTrckrRaw) as LocationItem[])
+        : [];
+      const buddyTrckrNext = buddyTrckrList.map(buddyTrckrItem =>
+        buddyTrckrItem.id === buddyTrckrUpdated.id
+          ? buddyTrckrUpdated
+          : buddyTrckrItem,
+      );
+      await AsyncStorage.setItem(
+        LOCATIONS_STORAGE_KEY,
+        JSON.stringify(buddyTrckrNext),
+      );
+    } catch (buddyTrckrErr) {
       if (__DEV__) {
         console.warn(
           'FishermansTrackerLocationDetail: saveLocation failed',
-          err,
+          buddyTrckrErr,
         );
       }
     }
   };
 
-  const handleBuddyFsrBack = () => {
-    if (isSessionActive) {
+  const buddyTrckrHandleBuddyFsrBack = () => {
+    if (buddyTrckrIsSessionActive) {
       Alert.alert(
         'End Fishing Session?',
         'If you leave now, the timer will stop and the current session time will be lost',
@@ -135,28 +158,33 @@ const FishermansTrackerLocationDetail: React.FC = () => {
           {
             text: 'Leave',
             style: 'destructive',
-            onPress: () => navigation.goBack(),
+            onPress: () => buddyTrckrNavigation.goBack(),
           },
         ],
       );
     } else {
-      navigation.goBack();
+      buddyTrckrNavigation.goBack();
     }
   };
 
-  const displayTitle = location?.catches?.[0]?.title ?? location?.title ?? '';
+  const buddyTrckrDisplayTitle =
+    buddyTrckrLocation?.catches?.[0]?.title ?? buddyTrckrLocation?.title ?? '';
 
-  const handleShare = () => {
-    if (!location) return;
-    const titleForShare = location.catches?.[0]?.title ?? location.title;
-    const message = `${titleForShare}\n${location.date}\nhttps://www.google.com/maps?q=${location.latitude},${location.longitude}`;
-    Share.share({ message, title: titleForShare });
+  const buddyTrckrHandleShare = () => {
+    if (!buddyTrckrLocation) return;
+    const buddyTrckrTitleForShare =
+      buddyTrckrLocation.catches?.[0]?.title ?? buddyTrckrLocation.title;
+    const buddyTrckrMessage = `${buddyTrckrTitleForShare}\n${buddyTrckrLocation.date}\nhttps://www.google.com/maps?q=${buddyTrckrLocation.latitude},${buddyTrckrLocation.longitude}`;
+    Share.share({
+      message: buddyTrckrMessage,
+      title: buddyTrckrTitleForShare,
+    });
   };
 
-  if (!location) {
+  if (!buddyTrckrLocation) {
     return (
-      <View style={styles.centeredBox}>
-        <Text style={styles.loadingText}>Loading...</Text>
+      <View style={styles.buddyTrckrCenteredBox}>
+        <Text style={styles.buddyTrckrLoadingText}>Loading...</Text>
       </View>
     );
   }
@@ -164,130 +192,169 @@ const FishermansTrackerLocationDetail: React.FC = () => {
   return (
     <ImageBackground
       source={require('../FishermansTrackerAssets/images/mainbg.png')}
-      style={styles.fshCnt}
+      style={styles.buddyTrckrFshCnt}
     >
       <ScrollView
-        style={styles.scroll}
-        contentContainerStyle={styles.scrollContent}
+        style={styles.buddyTrckrScroll}
+        contentContainerStyle={styles.buddyTrckrScrollContent}
         showsVerticalScrollIndicator={false}
         bounces={false}
       >
-        <View style={styles.headerFshCnt}>
+        <View style={styles.buddyTrckrHeaderFshCnt}>
           <Image
             source={require('../FishermansTrackerAssets/images/header.png')}
-            style={styles.headerFsh}
+            style={styles.buddyTrckrHeaderFsh}
           />
           <TouchableOpacity
-            style={styles.backButtn}
-            onPress={handleBuddyFsrBack}
+            style={styles.buddyTrckrBackButtn}
+            onPress={buddyTrckrHandleBuddyFsrBack}
             activeOpacity={0.8}
           >
             <Image
               source={require('../FishermansTrackerAssets/images/backArrow.png')}
             />
-            <Text style={styles.backButtnTxt}>Back</Text>
+            <Text style={styles.buddyTrckrBackButtnTxt}>Back</Text>
           </TouchableOpacity>
           <Image
             source={require('../FishermansTrackerAssets/images/headerImg.png')}
-            style={styles.headerImg}
+            style={styles.buddyTrckrHeaderImg}
           />
         </View>
 
         <View style={{ paddingHorizontal: 20, width: '100%' }}>
-          <View style={styles.card}>
-            <View style={styles.titleRow}>
-              <View style={styles.iconWrap}>
+          <View style={styles.buddyTrckrCard}>
+            <View style={styles.buddyTrckrTitleRow}>
+              <View style={styles.buddyTrckrIconWrap}>
                 <Image
                   source={require('../FishermansTrackerAssets/images/anchor.png')}
                 />
               </View>
-              <View style={styles.titleBody}>
-                <Text style={styles.titleText}>{displayTitle}</Text>
-                <Text style={styles.dateText}>{location.date}</Text>
+              <View style={styles.buddyTrckrTitleBody}>
+                <Text style={styles.buddyTrckrTitleText}>
+                  {buddyTrckrDisplayTitle}
+                </Text>
+                <Text style={styles.buddyTrckrDateText}>
+                  {buddyTrckrLocation.date}
+                </Text>
               </View>
             </View>
 
-            {(location.totalSessionSeconds != null ||
-              (location.catches && location.catches.length > 0)) && (
+            {(buddyTrckrLocation.totalSessionSeconds != null ||
+              (buddyTrckrLocation.catches &&
+                buddyTrckrLocation.catches.length > 0)) && (
               <>
-                {location.totalSessionSeconds != null && (
-                  <View style={styles.summaryBar}>
-                    <Text style={styles.summaryBarText}>
+                {buddyTrckrLocation.totalSessionSeconds != null && (
+                  <View style={styles.buddyTrckrSummaryBar}>
+                    <Text style={styles.buddyTrckrSummaryBarText}>
                       Time of fishing:{' '}
-                      {formatSessionTime(location.totalSessionSeconds)}
+                      {formatSessionTime(
+                        buddyTrckrLocation.totalSessionSeconds,
+                      )}
                     </Text>
                   </View>
                 )}
-                {location.catches && location.catches.length > 0 && (
-                  <View style={styles.summaryBar}>
-                    <Text style={styles.summaryBarText}>
-                      Kilograms of fish:{' '}
-                      {totalWeightKg(location.catches).toFixed(1)}{' '}
-                      {weightUnit === 'lb' ? 'lb' : 'kg'}
-                    </Text>
-                  </View>
-                )}
-                {location.catches && location.catches.length > 0 && (
-                  <View style={styles.catchesSection}>
-                    {location.catches.map((c, index) => (
-                      <View key={c.id} style={styles.catchCard}>
-                        <View style={styles.catchCardLeft}>
-                          {c.imageUri ? (
-                            <Image
-                              source={{ uri: c.imageUri }}
-                              style={styles.catchCardAvatar}
-                              resizeMode="cover"
-                            />
-                          ) : (
-                            <View style={styles.catchCardAvatarPlaceholder}>
-                              <Text style={styles.catchCardAvatarEmoji}>
-                                🐟
+
+                {buddyTrckrLocation.catches &&
+                  buddyTrckrLocation.catches.length > 0 && (
+                    <View style={styles.buddyTrckrSummaryBar}>
+                      <Text style={styles.buddyTrckrSummaryBarText}>
+                        Kilograms of fish:{' '}
+                        {totalWeightKg(buddyTrckrLocation.catches).toFixed(1)}{' '}
+                        {buddyTrckrWeightUnit === 'lb' ? 'lb' : 'kg'}
+                      </Text>
+                    </View>
+                  )}
+
+                {buddyTrckrLocation.catches &&
+                  buddyTrckrLocation.catches.length > 0 && (
+                    <View style={styles.buddyTrckrCatchesSection}>
+                      {buddyTrckrLocation.catches.map(
+                        (buddyTrckrCatch, buddyTrckrIndex) => (
+                          <View
+                            key={buddyTrckrCatch.id}
+                            style={styles.buddyTrckrCatchCard}
+                          >
+                            <View style={styles.buddyTrckrCatchCardLeft}>
+                              {buddyTrckrCatch.imageUri ? (
+                                <Image
+                                  source={{ uri: buddyTrckrCatch.imageUri }}
+                                  style={styles.buddyTrckrCatchCardAvatar}
+                                  resizeMode="cover"
+                                />
+                              ) : (
+                                <View
+                                  style={
+                                    styles.buddyTrckrCatchCardAvatarPlaceholder
+                                  }
+                                >
+                                  <Text
+                                    style={
+                                      styles.buddyTrckrCatchCardAvatarEmoji
+                                    }
+                                  >
+                                    🐟
+                                  </Text>
+                                </View>
+                              )}
+                            </View>
+
+                            <View style={styles.buddyTrckrCatchCardBody}>
+                              <Text
+                                style={styles.buddyTrckrCatchCardTitle}
+                                numberOfLines={1}
+                              >
+                                {buddyTrckrIndex === 0
+                                  ? 'First fish caught'
+                                  : buddyTrckrIndex === 1
+                                  ? 'Second fish caught'
+                                  : buddyTrckrCatch.title}
+                              </Text>
+                              <Text
+                                style={styles.buddyTrckrCatchCardMeta}
+                                numberOfLines={1}
+                              >
+                                {[
+                                  buddyTrckrCatch.species,
+                                  buddyTrckrCatch.equipment,
+                                ]
+                                  .filter(Boolean)
+                                  .join(' • ') || '—'}
+                              </Text>
+                              <Text
+                                style={styles.buddyTrckrCatchCardWeather}
+                                numberOfLines={2}
+                              >
+                                {buddyTrckrCatch.weatherConditions || '—'}
                               </Text>
                             </View>
-                          )}
-                        </View>
-                        <View style={styles.catchCardBody}>
-                          <Text style={styles.catchCardTitle} numberOfLines={1}>
-                            {index === 0
-                              ? 'First fish caught'
-                              : index === 1
-                              ? 'Second fish caught'
-                              : c.title}
-                          </Text>
-                          <Text style={styles.catchCardMeta} numberOfLines={1}>
-                            {[c.species, c.equipment]
-                              .filter(Boolean)
-                              .join(' • ') || '—'}
-                          </Text>
-                          <Text
-                            style={styles.catchCardWeather}
-                            numberOfLines={2}
-                          >
-                            {c.weatherConditions || '—'}
-                          </Text>
-                        </View>
-                        <View style={styles.catchCardWeightBadge}>
-                          <Text style={styles.catchCardWeightText}>
-                            {c.weight
-                              ? `${c.weight} ${
-                                  weightUnit === 'lb' ? 'Lb' : 'Kg'
-                                }`
-                              : '—'}
-                          </Text>
-                        </View>
-                      </View>
-                    ))}
-                  </View>
-                )}
+
+                            <View style={styles.buddyTrckrCatchCardWeightBadge}>
+                              <Text
+                                style={styles.buddyTrckrCatchCardWeightText}
+                              >
+                                {buddyTrckrCatch.weight
+                                  ? `${buddyTrckrCatch.weight} ${
+                                      buddyTrckrWeightUnit === 'lb'
+                                        ? 'Lb'
+                                        : 'Kg'
+                                    }`
+                                  : '—'}
+                              </Text>
+                            </View>
+                          </View>
+                        ),
+                      )}
+                    </View>
+                  )}
               </>
             )}
 
-            <View style={styles.mapWrap}>
+            <View style={styles.buddyTrckrMapWrap}>
               <MapView
-                style={styles.map}
+                style={styles.buddyTrckrMap}
                 initialRegion={{
-                  latitude: location.latitude,
-                  longitude: location.longitude,
+                  latitude: buddyTrckrLocation.latitude,
+                  longitude: buddyTrckrLocation.longitude,
                   latitudeDelta: 0.01,
                   longitudeDelta: 0.01,
                 }}
@@ -296,8 +363,8 @@ const FishermansTrackerLocationDetail: React.FC = () => {
               >
                 <Marker
                   coordinate={{
-                    latitude: location.latitude,
-                    longitude: location.longitude,
+                    latitude: buddyTrckrLocation.latitude,
+                    longitude: buddyTrckrLocation.longitude,
                   }}
                 >
                   <Image
@@ -308,20 +375,20 @@ const FishermansTrackerLocationDetail: React.FC = () => {
             </View>
 
             <TouchableOpacity
-              onPress={handleShare}
+              onPress={buddyTrckrHandleShare}
               activeOpacity={0.8}
-              style={styles.shareButtonContainer}
+              style={styles.buddyTrckrShareButtonContainer}
             >
               <LinearGradient
                 colors={['#A2E8D5', '#FFFAD0', '#2CCCE7']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
-                style={styles.shareButton}
+                style={styles.buddyTrckrShareButton}
               >
                 <Image
                   source={require('../FishermansTrackerAssets/images/share.png')}
                 />
-                <Text style={styles.shareButtonText}>Share</Text>
+                <Text style={styles.buddyTrckrShareButtonText}>Share</Text>
               </LinearGradient>
             </TouchableOpacity>
           </View>
@@ -332,35 +399,35 @@ const FishermansTrackerLocationDetail: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  fshCnt: {
+  buddyTrckrFshCnt: {
     flex: 1,
   },
-  centeredBox: {
+  buddyTrckrCenteredBox: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#7EC8E3',
   },
-  loadingText: {
+  buddyTrckrLoadingText: {
     fontSize: 16,
     color: '#fff',
   },
-  headerFshCnt: {
+  buddyTrckrHeaderFshCnt: {
     width: '100%',
     marginBottom: 0,
   },
-  headerFsh: {
+  buddyTrckrHeaderFsh: {
     width: '100%',
     height: 150,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
   },
-  headerImg: {
+  buddyTrckrHeaderImg: {
     position: 'absolute',
     right: 20,
     bottom: -10,
   },
-  backButtn: {
+  buddyTrckrBackButtn: {
     position: 'absolute',
     left: 15,
     top: 50,
@@ -374,12 +441,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  backButtnTxt: {
+  buddyTrckrBackButtnTxt: {
     fontSize: 16,
     fontWeight: '600',
     color: '#fff',
   },
-  timerWrp: {
+  buddyTrckrTimerWrp: {
     marginHorizontal: 20,
     marginTop: -24,
     marginBottom: 8,
@@ -389,18 +456,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     zIndex: 1,
   },
-  timerText: {
+  buddyTrckrTimerText: {
     fontSize: 24,
     fontWeight: '700',
     color: '#fff',
   },
-  scroll: {
+  buddyTrckrScroll: {
     flex: 1,
   },
-  scrollContent: {
+  buddyTrckrScrollContent: {
     paddingBottom: 20,
   },
-  card: {
+  buddyTrckrCard: {
     backgroundColor: '#286E42',
     borderRadius: 20,
     padding: 24,
@@ -408,49 +475,49 @@ const styles = StyleSheet.create({
     borderColor: '#fff',
     marginTop: 20,
   },
-  titleRow: {
+  buddyTrckrTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 16,
   },
-  iconWrap: {
+  buddyTrckrIconWrap: {
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
-  iconText: {
+  buddyTrckrIconText: {
     fontSize: 24,
   },
-  titleBody: {
+  buddyTrckrTitleBody: {
     flex: 1,
   },
-  titleText: {
+  buddyTrckrTitleText: {
     fontSize: 18,
     fontWeight: '600',
     color: '#fff',
   },
-  dateText: {
+  buddyTrckrDateText: {
     fontSize: 14,
     color: '#FFC813',
     marginTop: 3,
   },
-  summaryBar: {
+  buddyTrckrSummaryBar: {
     backgroundColor: '#FFC813',
     borderRadius: 60,
     paddingVertical: 5,
     paddingHorizontal: 18,
     marginBottom: 10,
   },
-  summaryBarText: {
+  buddyTrckrSummaryBarText: {
     fontSize: 14,
     fontWeight: '500',
     color: '#286E42',
     textAlign: 'center',
   },
-  catchesSection: {
+  buddyTrckrCatchesSection: {
     marginBottom: 16,
   },
-  catchCard: {
+  buddyTrckrCatchCard: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#799930',
@@ -458,15 +525,15 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 10,
   },
-  catchCardLeft: {
+  buddyTrckrCatchCardLeft: {
     marginRight: 12,
   },
-  catchCardAvatar: {
+  buddyTrckrCatchCardAvatar: {
     width: 48,
     height: 48,
     borderRadius: 24,
   },
-  catchCardAvatarPlaceholder: {
+  buddyTrckrCatchCardAvatarPlaceholder: {
     width: 48,
     height: 48,
     borderRadius: 24,
@@ -474,53 +541,53 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  catchCardAvatarEmoji: {
+  buddyTrckrCatchCardAvatarEmoji: {
     fontSize: 24,
   },
-  catchCardBody: {
+  buddyTrckrCatchCardBody: {
     flex: 1,
   },
-  catchCardTitle: {
+  buddyTrckrCatchCardTitle: {
     fontSize: 16,
     fontWeight: '700',
     color: '#fff',
     marginBottom: 4,
   },
-  catchCardMeta: {
+  buddyTrckrCatchCardMeta: {
     fontSize: 12,
     color: '#FFFFFFB2',
     marginBottom: 4,
   },
-  catchCardWeather: {
+  buddyTrckrCatchCardWeather: {
     fontSize: 12,
     color: '#FFFFFFB2',
   },
-  catchCardWeightBadge: {
+  buddyTrckrCatchCardWeightBadge: {
     backgroundColor: '#FFC813',
     borderRadius: 12,
     paddingVertical: 6,
     paddingHorizontal: 10,
   },
-  catchCardWeightText: {
+  buddyTrckrCatchCardWeightText: {
     fontSize: 12,
     fontWeight: '700',
     color: '#1a3a4a',
   },
-  mapWrap: {
+  buddyTrckrMapWrap: {
     width: '100%',
     height: 144,
     borderRadius: 20,
     overflow: 'hidden',
     marginBottom: 15,
   },
-  map: {
+  buddyTrckrMap: {
     width: '100%',
     height: '100%',
   },
-  shareButtonContainer: {
+  buddyTrckrShareButtonContainer: {
     width: '100%',
   },
-  shareButton: {
+  buddyTrckrShareButton: {
     width: '100%',
     height: 51,
     borderRadius: 60,
@@ -529,12 +596,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 8,
   },
-  shareButtonText: {
+  buddyTrckrShareButtonText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#007083',
   },
-  bottomBar: {
+  buddyTrckrBottomBar: {
     paddingHorizontal: 20,
     paddingVertical: 16,
     paddingBottom: 36,
@@ -544,19 +611,19 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#fff',
   },
-  bottomRow: {
+  buddyTrckrBottomRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 12,
     gap: 12,
   },
-  placeTitle: {
+  buddyTrckrPlaceTitle: {
     flex: 1,
     fontSize: 16,
     fontWeight: '600',
     color: '#fff',
   },
-  addCatchButton: {
+  buddyTrckrAddCatchButton: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFC813',
@@ -565,32 +632,32 @@ const styles = StyleSheet.create({
     borderRadius: 60,
     gap: 6,
   },
-  addCatchPlus: {
+  buddyTrckrAddCatchPlus: {
     fontSize: 18,
     fontWeight: '700',
     color: '#1a3a4a',
   },
-  addCatchText: {
+  buddyTrckrAddCatchText: {
     fontSize: 14,
     fontWeight: '600',
     color: '#1a3a4a',
   },
-  startButtonContainer: {
+  buddyTrckrStartButtonContainer: {
     width: '100%',
   },
-  startButton: {
+  buddyTrckrStartButton: {
     width: '100%',
     height: 51,
     borderRadius: 60,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  startButtonText: {
+  buddyTrckrStartButtonText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#007083',
   },
-  endButton: {
+  buddyTrckrEndButton: {
     width: '100%',
     height: 51,
     borderRadius: 60,
@@ -598,19 +665,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  endButtonText: {
+  buddyTrckrEndButtonText: {
     fontSize: 16,
     fontWeight: '700',
     color: '#fff',
   },
-  modalBackdrop: {
+  buddyTrckrModalBackdrop: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
   },
-  modalCard: {
+  buddyTrckrModalCard: {
     width: '100%',
     maxWidth: 400,
     backgroundColor: '#286E42',
@@ -619,14 +686,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#fff',
   },
-  modalTitle: {
+  buddyTrckrModalTitle: {
     fontSize: 22,
     fontWeight: '700',
     color: '#fff',
     marginBottom: 20,
     textAlign: 'center',
   },
-  catchImageCircle: {
+  buddyTrckrCatchImageCircle: {
     width: 100,
     height: 100,
     borderRadius: 50,
@@ -637,16 +704,16 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     overflow: 'hidden',
   },
-  catchImage: {
+  buddyTrckrCatchImage: {
     width: '100%',
     height: '100%',
   },
-  catchImagePlus: {
+  buddyTrckrCatchImagePlus: {
     fontSize: 36,
     color: '#fff',
     fontWeight: '300',
   },
-  modalInput: {
+  buddyTrckrModalInput: {
     width: '100%',
     paddingVertical: 14,
     paddingHorizontal: 16,
@@ -656,43 +723,43 @@ const styles = StyleSheet.create({
     color: '#fff',
     marginBottom: 12,
   },
-  weightRow: {
+  buddyTrckrWeightRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 12,
     gap: 8,
   },
-  weightInput: {
+  buddyTrckrWeightInput: {
     flex: 1,
     marginBottom: 0,
   },
-  unitLabel: {
+  buddyTrckrUnitLabel: {
     fontSize: 16,
     color: '#FFFFFFB2',
     minWidth: 28,
   },
-  saveCatchButtonContainer: {
+  buddyTrckrSaveCatchButtonContainer: {
     width: '100%',
     marginTop: 8,
     marginBottom: 12,
   },
-  saveCatchButton: {
+  buddyTrckrSaveCatchButton: {
     width: '100%',
     height: 51,
     borderRadius: 60,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  saveCatchButtonText: {
+  buddyTrckrSaveCatchButtonText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#007083',
   },
-  cancelButton: {
+  buddyTrckrCancelButton: {
     alignSelf: 'center',
     paddingVertical: 8,
   },
-  cancelButtonText: {
+  buddyTrckrCancelButtonText: {
     fontSize: 16,
     color: '#FFFFFFB2',
     fontWeight: '500',

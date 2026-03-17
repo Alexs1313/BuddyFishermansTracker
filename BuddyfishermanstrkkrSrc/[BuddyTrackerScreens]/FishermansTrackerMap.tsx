@@ -46,37 +46,50 @@ type MapDraft = {
   sessionLocationId?: string;
 };
 
-const DEFAULT_REGION = {
+const buddyTrckrDefaultRegion = {
   latitude: 45.5,
   longitude: -0.5,
   latitudeDelta: 0.1,
   longitudeDelta: 0.1,
 };
 
-const MAX_CATCHES_PER_SESSION = 2;
+const buddyTrckrMaxCatchesPerSession = 2;
 
 const FishermansTrackerMap: React.FC = () => {
-  const navigation =
+  const buddyTrckrNavigation =
     useNavigation<StackNavigationProp<StackList, 'FishermansTrackerMap'>>();
-  const [title, setTitle] = useState('');
-  const [pin, setPin] = useState({
-    latitude: DEFAULT_REGION.latitude,
-    longitude: DEFAULT_REGION.longitude,
+  const [buddyTrckrTitle, setBuddyTrckrTitle] = useState('');
+  const [buddyTrckrPin, setBuddyTrckrPin] = useState({
+    latitude: buddyTrckrDefaultRegion.latitude,
+    longitude: buddyTrckrDefaultRegion.longitude,
   });
-  const [catchModalVisible, setCatchModalVisible] = useState(false);
-  const [catchTitle, setCatchTitle] = useState('');
-  const [catchSpecies, setCatchSpecies] = useState('');
-  const [catchWeight, setCatchWeight] = useState('');
-  const [catchWeather, setCatchWeather] = useState('');
-  const [catchEquipment, setCatchEquipment] = useState('');
-  const [catchImageUri, setCatchImageUri] = useState<string | null>(null);
-  const [pendingCatches, setPendingCatches] = useState<CatchItem[]>([]);
-  const [isSessionActive, setSessionActive] = useState(false);
-  const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
-  const [timerSeconds, setTimerSeconds] = useState(0);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const [weightUnit, setWeightUnit] = useState<'kg' | 'lb'>('kg');
-  const { isEnabledNotifications } = useStorage();
+  const [buddyTrckrCatchModalVisible, setBuddyTrckrCatchModalVisible] =
+    useState(false);
+  const [buddyTrckrCatchTitle, setBuddyTrckrCatchTitle] = useState('');
+  const [buddyTrckrCatchSpecies, setBuddyTrckrCatchSpecies] = useState('');
+  const [buddyTrckrCatchWeight, setBuddyTrckrCatchWeight] = useState('');
+  const [buddyTrckrCatchWeather, setBuddyTrckrCatchWeather] = useState('');
+  const [buddyTrckrCatchEquipment, setBuddyTrckrCatchEquipment] = useState('');
+  const [buddyTrckrCatchImageUri, setBuddyTrckrCatchImageUri] = useState<
+    string | null
+  >(null);
+  const [buddyTrckrPendingCatches, setBuddyTrckrPendingCatches] = useState<
+    CatchItem[]
+  >([]);
+  const [buddyTrckrIsSessionActive, setBuddyTrckrSessionActive] =
+    useState(false);
+  const [buddyTrckrSessionStartTime, setBuddyTrckrSessionStartTime] = useState<
+    number | null
+  >(null);
+  const [buddyTrckrTimerSeconds, setBuddyTrckrTimerSeconds] = useState(0);
+  const buddyTrckrTimerRef = useRef<ReturnType<typeof setInterval> | null>(
+    null,
+  );
+  const [buddyTrckrWeightUnit, setBuddyTrckrWeightUnit] = useState<'kg' | 'lb'>(
+    'kg',
+  );
+  const { isEnabledNotifications: buddyTrckrIsEnabledNotifications } =
+    useStorage();
 
   useFocusEffect(
     useCallback(() => {
@@ -89,112 +102,137 @@ const FishermansTrackerMap: React.FC = () => {
   );
 
   useEffect(() => {
-    if (isSessionActive && sessionStartTime !== null) {
-      timerRef.current = setInterval(() => {
-        setTimerSeconds(Math.floor((Date.now() - sessionStartTime) / 1000));
+    if (buddyTrckrIsSessionActive && buddyTrckrSessionStartTime !== null) {
+      buddyTrckrTimerRef.current = setInterval(() => {
+        setBuddyTrckrTimerSeconds(
+          Math.floor((Date.now() - buddyTrckrSessionStartTime) / 1000),
+        );
       }, 1000);
     }
     return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
+      if (buddyTrckrTimerRef.current) {
+        clearInterval(buddyTrckrTimerRef.current);
+        buddyTrckrTimerRef.current = null;
       }
     };
-  }, [isSessionActive, sessionStartTime]);
+  }, [buddyTrckrIsSessionActive, buddyTrckrSessionStartTime]);
 
-  const buddyFshHandleStartFishing = () => {
-    setSessionActive(true);
-    setSessionStartTime(Date.now());
-    setTimerSeconds(0);
-    setPendingCatches([]);
+  const buddyTrckrHandleStartFishing = () => {
+    setBuddyTrckrSessionActive(true);
+    setBuddyTrckrSessionStartTime(Date.now());
+    setBuddyTrckrTimerSeconds(0);
+    setBuddyTrckrPendingCatches([]);
   };
 
-  const buddyFshHandleEndFishing = async () => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
+  const buddyTrckrHandleEndFishing = async () => {
+    if (buddyTrckrTimerRef.current) {
+      clearInterval(buddyTrckrTimerRef.current);
+      buddyTrckrTimerRef.current = null;
     }
     try {
       await AsyncStorage.removeItem(MAP_DRAFT_KEY);
-    } catch (err) {
+    } catch (buddyTrckrErr) {
       if (__DEV__) {
-        console.warn('FishermansTrackerMap: handleEndFishing failed', err);
+        console.warn(
+          'FishermansTrackerMap: handleEndFishing failed',
+          buddyTrckrErr,
+        );
       }
     }
-    setSessionActive(false);
-    setSessionStartTime(null);
-    setTimerSeconds(0);
-    setPendingCatches([]);
+    setBuddyTrckrSessionActive(false);
+    setBuddyTrckrSessionStartTime(null);
+    setBuddyTrckrTimerSeconds(0);
+    setBuddyTrckrPendingCatches([]);
   };
 
-  const openCatchModal = () => {
-    setCatchTitle('');
-    setCatchSpecies('');
-    setCatchWeight('');
-    setCatchWeather('');
-    setCatchEquipment('');
-    setCatchImageUri(null);
-    setCatchModalVisible(true);
+  const buddyTrckrOpenCatchModal = () => {
+    setBuddyTrckrCatchTitle('');
+    setBuddyTrckrCatchSpecies('');
+    setBuddyTrckrCatchWeight('');
+    setBuddyTrckrCatchWeather('');
+    setBuddyTrckrCatchEquipment('');
+    setBuddyTrckrCatchImageUri(null);
+    setBuddyTrckrCatchModalVisible(true);
   };
 
-  const closeCatchModal = () => setCatchModalVisible(false);
+  const buddyTrckrCloseCatchModal = () => setBuddyTrckrCatchModalVisible(false);
 
-  const buddyFshHandlePickCatchImage = () => {
+  const buddyTrckrHandlePickCatchImage = () => {
     launchImageLibrary(
       { mediaType: 'photo', includeBase64: false },
-      response => {
-        if (response.didCancel) return;
-        const uri = response.assets?.[0]?.uri ?? null;
-        if (uri) setCatchImageUri(uri);
+      buddyTrckrResponse => {
+        if (buddyTrckrResponse.didCancel) return;
+        const buddyTrckrUri = buddyTrckrResponse.assets?.[0]?.uri ?? null;
+        if (buddyTrckrUri) setBuddyTrckrCatchImageUri(buddyTrckrUri);
       },
     );
   };
 
-  const buddyFshHandleSaveCatch = async () => {
-    const newCatch: CatchItem = {
+  const buddyTrckrHandleSaveCatch = async () => {
+    const buddyTrckrNewCatch: CatchItem = {
       id: Date.now().toString(),
-      title: catchTitle.trim() || 'Catch',
-      species: catchSpecies.trim(),
-      weight: catchWeight.trim(),
-      weatherConditions: catchWeather.trim(),
-      equipment: catchEquipment.trim(),
-      imageUri: catchImageUri,
+      title: buddyTrckrCatchTitle.trim() || 'Catch',
+      species: buddyTrckrCatchSpecies.trim(),
+      weight: buddyTrckrCatchWeight.trim(),
+      weatherConditions: buddyTrckrCatchWeather.trim(),
+      equipment: buddyTrckrCatchEquipment.trim(),
+      imageUri: buddyTrckrCatchImageUri,
     };
-    const nextCatches =
-      pendingCatches.length >= MAX_CATCHES_PER_SESSION
-        ? pendingCatches
-        : [newCatch, ...pendingCatches];
-    setPendingCatches(nextCatches);
-    closeCatchModal();
 
-    if (sessionStartTime === null) return;
-    const totalSessionSeconds = Math.floor(
-      (Date.now() - sessionStartTime) / 1000,
+    const buddyTrckrNextCatches =
+      buddyTrckrPendingCatches.length >= buddyTrckrMaxCatchesPerSession
+        ? buddyTrckrPendingCatches
+        : [buddyTrckrNewCatch, ...buddyTrckrPendingCatches];
+
+    setBuddyTrckrPendingCatches(buddyTrckrNextCatches);
+    buddyTrckrCloseCatchModal();
+
+    if (buddyTrckrSessionStartTime === null) return;
+
+    const buddyTrckrTotalSessionSeconds = Math.floor(
+      (Date.now() - buddyTrckrSessionStartTime) / 1000,
     );
-    const locationTitle =
-      catchTitle.trim() || title.trim() || 'Title of place here';
+
+    const buddyTrckrLocationTitle =
+      buddyTrckrCatchTitle.trim() ||
+      buddyTrckrTitle.trim() ||
+      'Title of place here';
+
     try {
-      const draftRaw = await AsyncStorage.getItem(MAP_DRAFT_KEY);
-      const draft = draftRaw ? (JSON.parse(draftRaw) as MapDraft) : null;
-      const sessionLocationId = draft?.sessionLocationId;
+      const buddyTrckrDraftRaw = await AsyncStorage.getItem(MAP_DRAFT_KEY);
+      const buddyTrckrDraft = buddyTrckrDraftRaw
+        ? (JSON.parse(buddyTrckrDraftRaw) as MapDraft)
+        : null;
+      const buddyTrckrSessionLocationId = buddyTrckrDraft?.sessionLocationId;
 
-      const raw = await AsyncStorage.getItem(LOCATIONS_STORAGE_KEY);
-      const list = raw ? (JSON.parse(raw) as LocationItem[]) : [];
+      const buddyTrckrRaw = await AsyncStorage.getItem(LOCATIONS_STORAGE_KEY);
+      const buddyTrckrList = buddyTrckrRaw
+        ? (JSON.parse(buddyTrckrRaw) as LocationItem[])
+        : [];
 
-      if (sessionLocationId) {
-        const idx = list.findIndex(l => l.id === sessionLocationId);
-        if (idx !== -1) {
-          list[idx] = {
-            ...list[idx],
-            title: locationTitle,
-            catches: nextCatches.length > 0 ? nextCatches : undefined,
-            totalSessionSeconds,
+      if (buddyTrckrSessionLocationId) {
+        const buddyTrckrIdx = buddyTrckrList.findIndex(
+          buddyTrckrLocation =>
+            buddyTrckrLocation.id === buddyTrckrSessionLocationId,
+        );
+
+        if (buddyTrckrIdx !== -1) {
+          buddyTrckrList[buddyTrckrIdx] = {
+            ...buddyTrckrList[buddyTrckrIdx],
+            title: buddyTrckrLocationTitle,
+            catches:
+              buddyTrckrNextCatches.length > 0
+                ? buddyTrckrNextCatches
+                : undefined,
+            totalSessionSeconds: buddyTrckrTotalSessionSeconds,
           };
+
           await AsyncStorage.setItem(
             LOCATIONS_STORAGE_KEY,
-            JSON.stringify(list),
+            JSON.stringify(buddyTrckrList),
           );
-          if (isEnabledNotifications) {
+
+          if (buddyTrckrIsEnabledNotifications) {
             Toast.show({
               type: 'success',
               text1: 'Successfully saved',
@@ -204,29 +242,39 @@ const FishermansTrackerMap: React.FC = () => {
           }
         }
       } else {
-        const newLocation: LocationItem = {
+        const buddyTrckrNewLocation: LocationItem = {
           id: Date.now().toString(),
-          title: locationTitle,
+          title: buddyTrckrLocationTitle,
           date: formatDate(new Date()),
-          latitude: pin.latitude,
-          longitude: pin.longitude,
-          catches: nextCatches.length > 0 ? nextCatches : undefined,
-          totalSessionSeconds,
+          latitude: buddyTrckrPin.latitude,
+          longitude: buddyTrckrPin.longitude,
+          catches:
+            buddyTrckrNextCatches.length > 0
+              ? buddyTrckrNextCatches
+              : undefined,
+          totalSessionSeconds: buddyTrckrTotalSessionSeconds,
         };
-        const next = [newLocation, ...list];
-        await AsyncStorage.setItem(LOCATIONS_STORAGE_KEY, JSON.stringify(next));
+
+        const buddyTrckrNext = [buddyTrckrNewLocation, ...buddyTrckrList];
+
+        await AsyncStorage.setItem(
+          LOCATIONS_STORAGE_KEY,
+          JSON.stringify(buddyTrckrNext),
+        );
+
         await AsyncStorage.setItem(
           MAP_DRAFT_KEY,
           JSON.stringify({
-            title,
-            latitude: pin.latitude,
-            longitude: pin.longitude,
-            sessionStartTime,
-            catches: nextCatches,
-            sessionLocationId: newLocation.id,
+            title: buddyTrckrTitle,
+            latitude: buddyTrckrPin.latitude,
+            longitude: buddyTrckrPin.longitude,
+            sessionStartTime: buddyTrckrSessionStartTime,
+            catches: buddyTrckrNextCatches,
+            sessionLocationId: buddyTrckrNewLocation.id,
           } as MapDraft),
         );
-        if (isEnabledNotifications) {
+
+        if (buddyTrckrIsEnabledNotifications) {
           Toast.show({
             type: 'success',
             text1: 'Successfully saved',
@@ -240,15 +288,16 @@ const FishermansTrackerMap: React.FC = () => {
       await AsyncStorage.setItem(
         MAP_DRAFT_KEY,
         JSON.stringify({
-          title,
-          latitude: pin.latitude,
-          longitude: pin.longitude,
-          sessionStartTime,
-          catches: nextCatches,
-          sessionLocationId,
+          title: buddyTrckrTitle,
+          latitude: buddyTrckrPin.latitude,
+          longitude: buddyTrckrPin.longitude,
+          sessionStartTime: buddyTrckrSessionStartTime,
+          catches: buddyTrckrNextCatches,
+          sessionLocationId: buddyTrckrSessionLocationId,
         } as MapDraft),
       );
-      if (isEnabledNotifications) {
+
+      if (buddyTrckrIsEnabledNotifications) {
         Toast.show({
           type: 'success',
           text1: 'Successfully saved',
@@ -256,55 +305,63 @@ const FishermansTrackerMap: React.FC = () => {
           visibilityTime: 2000,
         });
       }
-    } catch (err) {
+    } catch (buddyTrckrErr) {
       if (__DEV__) {
-        console.warn('FishermansTrackerMap: handleSaveCatch failed', err);
+        console.warn(
+          'FishermansTrackerMap: handleSaveCatch failed',
+          buddyTrckrErr,
+        );
       }
     }
   };
 
-  const canAddCatch =
-    isSessionActive && pendingCatches.length < MAX_CATCHES_PER_SESSION;
+  const buddyTrckrCanAddCatch =
+    buddyTrckrIsSessionActive &&
+    buddyTrckrPendingCatches.length < buddyTrckrMaxCatchesPerSession;
 
   return (
     <ImageBackground
       source={require('../FishermansTrackerAssets/images/mainbg.png')}
-      style={styles.container}
+      style={styles.buddyTrckrContainer}
     >
-      <View style={styles.headerContainer}>
+      <View style={styles.buddyTrckrHeaderContainer}>
         <Image
           source={require('../FishermansTrackerAssets/images/header.png')}
-          style={styles.header}
+          style={styles.buddyTrckrHeader}
         />
         <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
+          style={styles.buddyTrckrBackButton}
+          onPress={() => buddyTrckrNavigation.goBack()}
           activeOpacity={0.8}
         >
           <Image
             source={require('../FishermansTrackerAssets/images/backArrow.png')}
           />
-          <Text style={styles.backButtonText}>Back</Text>
+          <Text style={styles.buddyTrckrBackButtonText}>Back</Text>
         </TouchableOpacity>
         <Image
           source={require('../FishermansTrackerAssets/images/headerImg.png')}
-          style={styles.headerImg}
+          style={styles.buddyTrckrHeaderImg}
         />
       </View>
 
-      {isSessionActive && (
-        <View style={styles.timerWrap}>
-          <Text style={styles.timerText}>{formatTimer(timerSeconds)}</Text>
+      {buddyTrckrIsSessionActive && (
+        <View style={styles.buddyTrckrTimerWrap}>
+          <Text style={styles.buddyTrckrTimerText}>
+            {formatTimer(buddyTrckrTimerSeconds)}
+          </Text>
         </View>
       )}
 
-      <View style={styles.mapContainer}>
+      <View style={styles.buddyTrckrMapContainer}>
         <MapView
-          style={styles.map}
-          initialRegion={DEFAULT_REGION}
-          onPress={e => setPin(e.nativeEvent.coordinate)}
+          style={styles.buddyTrckrMap}
+          initialRegion={buddyTrckrDefaultRegion}
+          onPress={buddyTrckrEvent =>
+            setBuddyTrckrPin(buddyTrckrEvent.nativeEvent.coordinate)
+          }
         >
-          <Marker coordinate={pin}>
+          <Marker coordinate={buddyTrckrPin}>
             <Image
               source={require('../FishermansTrackerAssets/images/marker.png')}
             />
@@ -312,55 +369,62 @@ const FishermansTrackerMap: React.FC = () => {
         </MapView>
       </View>
 
-      <View style={styles.bottomBar}>
-        <View style={styles.bottomRow}>
-          <Text style={styles.titleInputFlex}>Title of place here</Text>
+      <View style={styles.buddyTrckrBottomBar}>
+        <View style={styles.buddyTrckrBottomRow}>
+          <Text style={styles.buddyTrckrTitleInputFlex}>
+            Title of place here
+          </Text>
           <TouchableOpacity
             style={[
-              styles.addCatchButton,
-              !canAddCatch && styles.addCatchButtonDisabled,
+              styles.buddyTrckrAddCatchButton,
+              !buddyTrckrCanAddCatch && styles.buddyTrckrAddCatchButtonDisabled,
             ]}
-            onPress={canAddCatch ? openCatchModal : undefined}
+            onPress={
+              buddyTrckrCanAddCatch ? buddyTrckrOpenCatchModal : undefined
+            }
             activeOpacity={0.8}
-            disabled={!canAddCatch}
+            disabled={!buddyTrckrCanAddCatch}
           >
             <Image
               source={require('../FishermansTrackerAssets/images/addcatch.png')}
             />
-            <Text style={styles.addCatchText}>Add catch</Text>
+            <Text style={styles.buddyTrckrAddCatchText}>Add catch</Text>
           </TouchableOpacity>
         </View>
-        {!isSessionActive ? (
+
+        {!buddyTrckrIsSessionActive ? (
           <TouchableOpacity
-            onPress={buddyFshHandleStartFishing}
+            onPress={buddyTrckrHandleStartFishing}
             activeOpacity={0.8}
-            style={styles.startButtonContainer}
+            style={styles.buddyTrckrStartButtonContainer}
           >
             <LinearGradient
               colors={['#A2E8D5', '#FFFAD0', '#2CCCE7']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
-              style={styles.startButton}
+              style={styles.buddyTrckrStartButton}
             >
-              <Text style={styles.startButtonText}>Start fishing</Text>
+              <Text style={styles.buddyTrckrStartButtonText}>
+                Start fishing
+              </Text>
             </LinearGradient>
           </TouchableOpacity>
         ) : (
           <TouchableOpacity
-            style={styles.endButton}
-            onPress={buddyFshHandleEndFishing}
+            style={styles.buddyTrckrEndButton}
+            onPress={buddyTrckrHandleEndFishing}
             activeOpacity={0.8}
           >
-            <Text style={styles.endButtonText}>End fishing</Text>
+            <Text style={styles.buddyTrckrEndButtonText}>End fishing</Text>
           </TouchableOpacity>
         )}
       </View>
 
       <Modal
-        visible={catchModalVisible}
+        visible={buddyTrckrCatchModalVisible}
         transparent
         animationType="fade"
-        onRequestClose={closeCatchModal}
+        onRequestClose={buddyTrckrCloseCatchModal}
         statusBarTranslucent={Platform.OS === 'android'}
       >
         {Platform.OS === 'ios' && (
@@ -376,27 +440,28 @@ const FishermansTrackerMap: React.FC = () => {
             }}
           />
         )}
+
         <TouchableOpacity
-          style={styles.modalBackdrop}
+          style={styles.buddyTrckrModalBackdrop}
           activeOpacity={1}
-          onPress={closeCatchModal}
+          onPress={buddyTrckrCloseCatchModal}
         >
           <TouchableOpacity
             activeOpacity={1}
-            onPress={e => e.stopPropagation()}
-            style={styles.modalCard}
+            onPress={buddyTrckrEvent => buddyTrckrEvent.stopPropagation()}
+            style={styles.buddyTrckrModalCard}
           >
-            <Text style={styles.modalTitle}>🎉 Log New Catch</Text>
+            <Text style={styles.buddyTrckrModalTitle}>🎉 Log New Catch</Text>
 
             <TouchableOpacity
-              style={styles.catchImageCircle}
-              onPress={buddyFshHandlePickCatchImage}
+              style={styles.buddyTrckrCatchImageCircle}
+              onPress={buddyTrckrHandlePickCatchImage}
               activeOpacity={0.8}
             >
-              {catchImageUri ? (
+              {buddyTrckrCatchImageUri ? (
                 <Image
-                  source={{ uri: catchImageUri }}
-                  style={styles.catchImage}
+                  source={{ uri: buddyTrckrCatchImageUri }}
+                  style={styles.buddyTrckrCatchImage}
                   resizeMode="cover"
                 />
               ) : (
@@ -407,86 +472,94 @@ const FishermansTrackerMap: React.FC = () => {
             </TouchableOpacity>
 
             <TextInput
-              style={styles.modalInput}
+              style={styles.buddyTrckrModalInput}
               placeholder="Title"
               placeholderTextColor="#FFFFFFB2"
-              value={catchTitle}
+              value={buddyTrckrCatchTitle}
               maxLength={20}
-              onChangeText={setCatchTitle}
+              onChangeText={setBuddyTrckrCatchTitle}
             />
             <TextInput
-              style={styles.modalInput}
+              style={styles.buddyTrckrModalInput}
               placeholder="Species"
               placeholderTextColor="#FFFFFFB2"
-              value={catchSpecies}
+              value={buddyTrckrCatchSpecies}
               maxLength={20}
-              onChangeText={setCatchSpecies}
+              onChangeText={setBuddyTrckrCatchSpecies}
             />
-            <View style={styles.weightRow}>
+            <View style={styles.buddyTrckrWeightRow}>
               <TextInput
-                style={[styles.modalInput, styles.weightInput]}
+                style={[
+                  styles.buddyTrckrModalInput,
+                  styles.buddyTrckrWeightInput,
+                ]}
                 placeholder="Weight"
                 placeholderTextColor="#FFFFFFB2"
-                value={catchWeight}
+                value={buddyTrckrCatchWeight}
                 maxLength={5}
-                onChangeText={setCatchWeight}
+                onChangeText={setBuddyTrckrCatchWeight}
                 keyboardType="decimal-pad"
               />
-              <Text style={styles.unitLabel}>
-                {weightUnit === 'lb' ? 'Lb' : 'Kg'}
+              <Text style={styles.buddyTrckrUnitLabel}>
+                {buddyTrckrWeightUnit === 'lb' ? 'Lb' : 'Kg'}
               </Text>
             </View>
             <TextInput
-              style={styles.modalInput}
+              style={styles.buddyTrckrModalInput}
               placeholder="Weather Conditions"
               placeholderTextColor="#FFFFFFB2"
-              value={catchWeather}
+              value={buddyTrckrCatchWeather}
               maxLength={20}
-              onChangeText={setCatchWeather}
+              onChangeText={setBuddyTrckrCatchWeather}
             />
             <TextInput
-              style={styles.modalInput}
+              style={styles.buddyTrckrModalInput}
               placeholder="Equipment"
               placeholderTextColor="#FFFFFFB2"
-              value={catchEquipment}
+              value={buddyTrckrCatchEquipment}
               maxLength={20}
-              onChangeText={setCatchEquipment}
+              onChangeText={setBuddyTrckrCatchEquipment}
             />
 
             {(() => {
-              const isCatchFormValid =
-                !!catchImageUri &&
-                catchTitle.trim() !== '' &&
-                catchSpecies.trim() !== '' &&
-                catchWeight.trim() !== '' &&
-                catchWeather.trim() !== '' &&
-                catchEquipment.trim() !== '';
+              const buddyTrckrIsCatchFormValid =
+                !!buddyTrckrCatchImageUri &&
+                buddyTrckrCatchTitle.trim() !== '' &&
+                buddyTrckrCatchSpecies.trim() !== '' &&
+                buddyTrckrCatchWeight.trim() !== '' &&
+                buddyTrckrCatchWeather.trim() !== '' &&
+                buddyTrckrCatchEquipment.trim() !== '';
+
               return (
                 <TouchableOpacity
                   onPress={
-                    isCatchFormValid ? buddyFshHandleSaveCatch : undefined
+                    buddyTrckrIsCatchFormValid
+                      ? buddyTrckrHandleSaveCatch
+                      : undefined
                   }
                   activeOpacity={0.8}
-                  disabled={!isCatchFormValid}
+                  disabled={!buddyTrckrIsCatchFormValid}
                   style={[
-                    styles.saveCatchButtonContainer,
-                    !isCatchFormValid && styles.saveCatchButtonDisabled,
+                    styles.buddyTrckrSaveCatchButtonContainer,
+                    !buddyTrckrIsCatchFormValid &&
+                      styles.buddyTrckrSaveCatchButtonDisabled,
                   ]}
                 >
                   <LinearGradient
                     colors={
-                      isCatchFormValid
+                      buddyTrckrIsCatchFormValid
                         ? ['#A2E8D5', '#FFFAD0', '#2CCCE7']
                         : ['#97C5B8', '#97C5B8', '#97C5B8']
                     }
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
-                    style={styles.saveCatchButton}
+                    style={styles.buddyTrckrSaveCatchButton}
                   >
                     <Text
                       style={[
-                        styles.saveCatchButtonText,
-                        !isCatchFormValid && styles.saveCatchButtonTextDisabled,
+                        styles.buddyTrckrSaveCatchButtonText,
+                        !buddyTrckrIsCatchFormValid &&
+                          styles.buddyTrckrSaveCatchButtonTextDisabled,
                       ]}
                     >
                       Save Catch
@@ -495,11 +568,12 @@ const FishermansTrackerMap: React.FC = () => {
                 </TouchableOpacity>
               );
             })()}
+
             <TouchableOpacity
-              onPress={closeCatchModal}
-              style={styles.cancelButton}
+              onPress={buddyTrckrCloseCatchModal}
+              style={styles.buddyTrckrCancelButton}
             >
-              <Text style={styles.cancelButtonText}>Cancel</Text>
+              <Text style={styles.buddyTrckrCancelButtonText}>Cancel</Text>
             </TouchableOpacity>
           </TouchableOpacity>
         </TouchableOpacity>
@@ -509,10 +583,10 @@ const FishermansTrackerMap: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
+  buddyTrckrContainer: {
     flex: 1,
   },
-  headerContainer: {
+  buddyTrckrHeaderContainer: {
     width: '100%',
     marginBottom: 0,
     position: 'absolute',
@@ -521,18 +595,18 @@ const styles = StyleSheet.create({
     right: 0,
     zIndex: 1,
   },
-  header: {
+  buddyTrckrHeader: {
     width: '100%',
     height: 150,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
   },
-  headerImg: {
+  buddyTrckrHeaderImg: {
     position: 'absolute',
     right: 20,
     bottom: -10,
   },
-  backButton: {
+  buddyTrckrBackButton: {
     position: 'absolute',
     left: 15,
     top: 50,
@@ -546,12 +620,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 10,
   },
-  backButtonText: {
+  buddyTrckrBackButtonText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#fff',
   },
-  timerWrap: {
+  buddyTrckrTimerWrap: {
     marginHorizontal: 20,
     backgroundColor: '#286E42',
     borderRadius: 20,
@@ -565,20 +639,20 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#fff',
   },
-  timerText: {
+  buddyTrckrTimerText: {
     fontSize: 24,
     fontWeight: '700',
     color: '#fff',
   },
-  mapContainer: {
+  buddyTrckrMapContainer: {
     flex: 1,
     overflow: 'hidden',
   },
-  map: {
+  buddyTrckrMap: {
     width: '100%',
     height: '100%',
   },
-  bottomBar: {
+  buddyTrckrBottomBar: {
     paddingHorizontal: 20,
     paddingVertical: 16,
     paddingBottom: 20,
@@ -591,7 +665,7 @@ const styles = StyleSheet.create({
     width: '90%',
     alignSelf: 'center',
   },
-  bottomRow: {
+  buddyTrckrBottomRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 12,
@@ -599,12 +673,12 @@ const styles = StyleSheet.create({
     gap: 12,
     flexWrap: 'wrap',
   },
-  titleInputFlex: {
+  buddyTrckrTitleInputFlex: {
     fontSize: 20,
     fontWeight: '700',
     color: '#fff',
   },
-  addCatchButton: {
+  buddyTrckrAddCatchButton: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFC813',
@@ -613,35 +687,35 @@ const styles = StyleSheet.create({
     borderRadius: 60,
     gap: 6,
   },
-  addCatchPlus: {
+  buddyTrckrAddCatchPlus: {
     fontSize: 18,
     fontWeight: '700',
     color: '#1a3a4a',
   },
-  addCatchText: {
+  buddyTrckrAddCatchText: {
     fontSize: 16,
     fontWeight: '500',
     color: '#007083',
   },
-  addCatchButtonDisabled: {
+  buddyTrckrAddCatchButtonDisabled: {
     opacity: 0.8,
   },
-  startButtonContainer: {
+  buddyTrckrStartButtonContainer: {
     width: '100%',
   },
-  startButton: {
+  buddyTrckrStartButton: {
     width: '100%',
     height: 51,
     borderRadius: 60,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  startButtonText: {
+  buddyTrckrStartButtonText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#007083',
   },
-  endButton: {
+  buddyTrckrEndButton: {
     width: '100%',
     height: 51,
     borderRadius: 60,
@@ -649,19 +723,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  endButtonText: {
+  buddyTrckrEndButtonText: {
     fontSize: 16,
     fontWeight: '700',
     color: '#fff',
   },
-  modalBackdrop: {
+  buddyTrckrModalBackdrop: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
   },
-  modalCard: {
+  buddyTrckrModalCard: {
     width: '100%',
     maxWidth: 400,
     backgroundColor: '#286E42',
@@ -670,14 +744,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#fff',
   },
-  modalTitle: {
+  buddyTrckrModalTitle: {
     fontSize: 22,
     fontWeight: '700',
     color: '#fff',
     marginBottom: 20,
     textAlign: 'center',
   },
-  catchImageCircle: {
+  buddyTrckrCatchImageCircle: {
     width: 110,
     height: 110,
     borderRadius: 55,
@@ -688,16 +762,16 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     overflow: 'hidden',
   },
-  catchImage: {
+  buddyTrckrCatchImage: {
     width: '100%',
     height: '100%',
   },
-  catchImagePlus: {
+  buddyTrckrCatchImagePlus: {
     fontSize: 36,
     color: '#fff',
     fontWeight: '300',
   },
-  modalInput: {
+  buddyTrckrModalInput: {
     width: '100%',
     paddingVertical: 14,
     paddingHorizontal: 16,
@@ -707,17 +781,17 @@ const styles = StyleSheet.create({
     color: '#fff',
     marginBottom: 12,
   },
-  weightRow: {
+  buddyTrckrWeightRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 12,
     gap: 8,
   },
-  weightInput: {
+  buddyTrckrWeightInput: {
     flex: 1,
     marginBottom: 0,
   },
-  unitLabel: {
+  buddyTrckrUnitLabel: {
     fontSize: 16,
     color: '#FFFFFF',
     minWidth: 28,
@@ -725,34 +799,34 @@ const styles = StyleSheet.create({
     right: 16,
     top: 14,
   },
-  saveCatchButtonContainer: {
+  buddyTrckrSaveCatchButtonContainer: {
     width: '100%',
     marginTop: 8,
     marginBottom: 12,
   },
-  saveCatchButtonDisabled: {
+  buddyTrckrSaveCatchButtonDisabled: {
     opacity: 0.7,
   },
-  saveCatchButton: {
+  buddyTrckrSaveCatchButton: {
     width: '100%',
     height: 51,
     borderRadius: 60,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  saveCatchButtonText: {
+  buddyTrckrSaveCatchButtonText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#007083',
   },
-  saveCatchButtonTextDisabled: {
+  buddyTrckrSaveCatchButtonTextDisabled: {
     color: '#555',
   },
-  cancelButton: {
+  buddyTrckrCancelButton: {
     alignSelf: 'center',
     paddingVertical: 7,
   },
-  cancelButtonText: {
+  buddyTrckrCancelButtonText: {
     fontSize: 16,
     color: '#FFFFFF',
     fontWeight: '500',

@@ -42,121 +42,144 @@ type ProfileData = {
 };
 
 const FishermansTrackerProfile: React.FC = () => {
-  const navigation =
+  const buddyTrckrNavigation =
     useNavigation<StackNavigationProp<StackList, 'FishermansTrackerProfile'>>();
-  const [buddyFsNickname, setBuddyFsNickname] = useState('');
-  const [buddyFshunit, setBuddyFshunit] = useState<'kg' | 'lb'>('kg');
-  const [avatarUri, setAvatarUri] = useState<string | null>(null);
-  const [initialData, setInitialData] = useState<ProfileData | null>(null);
-  const { isEnabledNotifications, setIsEnabledNotifications } = useStorage();
+  const [buddyTrckrNickname, setBuddyTrckrNickname] = useState('');
+  const [buddyTrckrUnit, setBuddyTrckrUnit] = useState<'kg' | 'lb'>('kg');
+  const [buddyTrckrAvatarUri, setBuddyTrckrAvatarUri] = useState<string | null>(
+    null,
+  );
+  const [buddyTrckrInitialData, setBuddyTrckrInitialData] =
+    useState<ProfileData | null>(null);
+  const {
+    isEnabledNotifications: buddyTrckrIsEnabledNotifications,
+    setIsEnabledNotifications: buddyTrckrSetIsEnabledNotifications,
+  } = useStorage();
 
-  const buddyFshToggleNotifications = async (value: boolean) => {
+  const buddyTrckrToggleNotifications = async (buddyTrckrValue: boolean) => {
     Toast.show({
       type: 'success',
-      text1: `Notifications ${value ? 'enabled' : 'disabled'}`,
+      text1: `Notifications ${buddyTrckrValue ? 'enabled' : 'disabled'}`,
       position: 'top',
       visibilityTime: 2000,
     });
 
     try {
-      await AsyncStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(value));
-      setIsEnabledNotifications(value);
-    } catch (err) {
+      await AsyncStorage.setItem(
+        NOTIFICATIONS_KEY,
+        JSON.stringify(buddyTrckrValue),
+      );
+      buddyTrckrSetIsEnabledNotifications(buddyTrckrValue);
+    } catch (buddyTrckrErr) {
       if (__DEV__) {
         console.warn(
           'FishermansTrackerProfile: toggleNotifications failed',
-          err,
+          buddyTrckrErr,
         );
       }
     }
   };
 
-  const hasChanges = Boolean(
-    initialData &&
-      ((buddyFsNickname.trim() || 'there') !==
-        (initialData.nickname?.trim() || 'there') ||
-        buddyFshunit !== initialData.unit ||
-        avatarUri !== initialData.avatarUri),
+  const buddyTrckrHasChanges = Boolean(
+    buddyTrckrInitialData &&
+      ((buddyTrckrNickname.trim() || 'there') !==
+        (buddyTrckrInitialData.nickname?.trim() || 'there') ||
+        buddyTrckrUnit !== buddyTrckrInitialData.unit ||
+        buddyTrckrAvatarUri !== buddyTrckrInitialData.avatarUri),
   );
 
-  const buddyFshloadProfile = async () => {
+  const buddyTrckrLoadProfile = async () => {
     try {
-      const raw = await AsyncStorage.getItem(PROFILE_STORAGE_KEY);
-      if (raw) {
-        const data = JSON.parse(raw) as ProfileData;
-        const loaded: ProfileData = {
-          nickname: data.nickname ?? '',
-          unit: data.unit === 'lb' ? 'lb' : 'kg',
-          avatarUri: data.avatarUri ?? null,
+      const buddyTrckrRaw = await AsyncStorage.getItem(PROFILE_STORAGE_KEY);
+      if (buddyTrckrRaw) {
+        const buddyTrckrData = JSON.parse(buddyTrckrRaw) as ProfileData;
+        const buddyTrckrLoaded: ProfileData = {
+          nickname: buddyTrckrData.nickname ?? '',
+          unit: buddyTrckrData.unit === 'lb' ? 'lb' : 'kg',
+          avatarUri: buddyTrckrData.avatarUri ?? null,
         };
-        setBuddyFsNickname(loaded.nickname);
-        setBuddyFshunit(loaded.unit);
-        setAvatarUri(loaded.avatarUri);
-        setInitialData(loaded);
+        setBuddyTrckrNickname(buddyTrckrLoaded.nickname);
+        setBuddyTrckrUnit(buddyTrckrLoaded.unit);
+        setBuddyTrckrAvatarUri(buddyTrckrLoaded.avatarUri);
+        setBuddyTrckrInitialData(buddyTrckrLoaded);
       } else {
-        setBuddyFsNickname('');
-        setBuddyFshunit('kg');
-        setAvatarUri(null);
-        setInitialData({ nickname: '', unit: 'kg', avatarUri: null });
+        setBuddyTrckrNickname('');
+        setBuddyTrckrUnit('kg');
+        setBuddyTrckrAvatarUri(null);
+        setBuddyTrckrInitialData({
+          nickname: '',
+          unit: 'kg',
+          avatarUri: null,
+        });
       }
-    } catch (err) {
+    } catch (buddyTrckrErr) {
       if (__DEV__) {
-        console.warn('FishermansTrackerProfile: loadProfile failed', err);
+        console.warn(
+          'FishermansTrackerProfile: loadProfile failed',
+          buddyTrckrErr,
+        );
       }
-      setBuddyFsNickname('');
-      setBuddyFshunit('kg');
-      setAvatarUri(null);
-      setInitialData({ nickname: '', unit: 'kg', avatarUri: null });
+      setBuddyTrckrNickname('');
+      setBuddyTrckrUnit('kg');
+      setBuddyTrckrAvatarUri(null);
+      setBuddyTrckrInitialData({
+        nickname: '',
+        unit: 'kg',
+        avatarUri: null,
+      });
     }
   };
 
   useEffect(() => {
-    buddyFshloadProfile();
+    buddyTrckrLoadProfile();
   }, []);
 
-  const handlePickImage = () => {
+  const buddyTrckrHandlePickImage = () => {
     launchImageLibrary(
       { mediaType: 'photo', includeBase64: false },
-      response => {
-        if (response.didCancel) return;
-        if (response.errorCode) {
+      buddyTrckrResponse => {
+        if (buddyTrckrResponse.didCancel) return;
+        if (buddyTrckrResponse.errorCode) {
           Alert.alert(
             'error',
-            response.errorMessage ?? 'Failed to select photo',
+            buddyTrckrResponse.errorMessage ?? 'Failed to select photo',
           );
           return;
         }
-        const uri = response.assets?.[0]?.uri ?? null;
-        if (uri) setAvatarUri(uri);
+        const buddyTrckrUri = buddyTrckrResponse.assets?.[0]?.uri ?? null;
+        if (buddyTrckrUri) setBuddyTrckrAvatarUri(buddyTrckrUri);
       },
     );
   };
 
-  const buddyFshhandleSave = async () => {
+  const buddyTrckrHandleSave = async () => {
     try {
       await AsyncStorage.setItem(
         PROFILE_STORAGE_KEY,
         JSON.stringify({
-          nickname: buddyFsNickname.trim() || 'there',
-          unit: buddyFshunit,
-          avatarUri,
+          nickname: buddyTrckrNickname.trim() || 'there',
+          unit: buddyTrckrUnit,
+          avatarUri: buddyTrckrAvatarUri,
         }),
       );
-      navigation.goBack();
-    } catch (err) {
+      buddyTrckrNavigation.goBack();
+    } catch (buddyTrckrErr) {
       if (__DEV__) {
-        console.warn('FishermansTrackerProfile: handleSave failed', err);
+        console.warn(
+          'FishermansTrackerProfile: handleSave failed',
+          buddyTrckrErr,
+        );
       }
     }
   };
 
-  const handleShareApp = () => {
+  const buddyTrckrHandleShareApp = () => {
     Linking.openURL(
       'https://apps.apple.com/us/app/the-fisherman-buddy-tracker/id6760306838',
     );
   };
 
-  const handleResetData = () => {
+  const buddyTrckrHandleResetData = () => {
     Alert.alert(
       'Reset All Data?',
       'This will permanently delete all trips, catches, saved spots, notes, and statistics. Your profile will be kept. This action cannot be undone.',
@@ -174,11 +197,11 @@ const FishermansTrackerProfile: React.FC = () => {
                 LOCATIONS_STORAGE_KEY,
                 MAP_DRAFT_KEY,
               ]);
-            } catch (err) {
+            } catch (buddyTrckrErr) {
               if (__DEV__) {
                 console.warn(
                   'FishermansTrackerProfile: handleResetData failed',
-                  err,
+                  buddyTrckrErr,
                 );
               }
             }
@@ -191,47 +214,48 @@ const FishermansTrackerProfile: React.FC = () => {
   return (
     <ImageBackground
       source={require('../FishermansTrackerAssets/images/mainbg.png')}
-      style={styles.buddyFshcontainer}
+      style={styles.buddyTrckrContainer}
     >
       <ScrollView
-        style={styles.buddyFshcScrll}
-        contentContainerStyle={styles.scrollContent}
+        style={styles.buddyTrckrScroll}
+        contentContainerStyle={styles.buddyTrckrScrollContent}
         showsVerticalScrollIndicator={false}
         bounces={false}
       >
-        <View style={styles.headerContainer}>
+        <View style={styles.buddyTrckrHeaderContainer}>
           <Image
             source={require('../FishermansTrackerAssets/images/header.png')}
-            style={styles.header}
+            style={styles.buddyTrckrHeader}
           />
           <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
+            style={styles.buddyTrckrBackButton}
+            onPress={() => buddyTrckrNavigation.goBack()}
             activeOpacity={0.8}
           >
             <Image
               source={require('../FishermansTrackerAssets/images/backArrow.png')}
             />
-            <Text style={styles.backButtonText}>Back</Text>
+            <Text style={styles.buddyTrckrBackButtonText}>Back</Text>
           </TouchableOpacity>
           <Image
             source={require('../FishermansTrackerAssets/images/headerImg.png')}
-            style={styles.headerImg}
+            style={styles.buddyTrckrHeaderImg}
           />
         </View>
+
         <View style={{ paddingHorizontal: 20, width: '100%' }}>
-          <View style={styles.card}>
-            <Text style={styles.title}>Settings</Text>
+          <View style={styles.buddyTrckrCard}>
+            <Text style={styles.buddyTrckrTitle}>Settings</Text>
 
             <TouchableOpacity
-              style={styles.avatarPlaceholder}
+              style={styles.buddyTrckrAvatarPlaceholder}
               activeOpacity={0.8}
-              onPress={handlePickImage}
+              onPress={buddyTrckrHandlePickImage}
             >
-              {avatarUri ? (
+              {buddyTrckrAvatarUri ? (
                 <Image
-                  source={{ uri: avatarUri }}
-                  style={styles.avatarImage}
+                  source={{ uri: buddyTrckrAvatarUri }}
+                  style={styles.buddyTrckrAvatarImage}
                   resizeMode="cover"
                 />
               ) : (
@@ -242,120 +266,132 @@ const FishermansTrackerProfile: React.FC = () => {
             </TouchableOpacity>
 
             <TextInput
-              style={styles.input}
+              style={styles.buddyTrckrInput}
               placeholder="Name"
               placeholderTextColor="#FFFFFFB2"
-              value={buddyFsNickname}
-              onChangeText={setBuddyFsNickname}
+              value={buddyTrckrNickname}
+              onChangeText={setBuddyTrckrNickname}
               maxLength={10}
             />
 
-            <View style={styles.unitRow}>
+            <View style={styles.buddyTrckrUnitRow}>
               <TouchableOpacity
                 style={[
-                  styles.unitOption,
-                  buddyFshunit === 'kg' && styles.unitOptionActive,
+                  styles.buddyTrckrUnitOption,
+                  buddyTrckrUnit === 'kg' && styles.buddyTrckrUnitOptionActive,
                 ]}
-                onPress={() => setBuddyFshunit('kg')}
+                onPress={() => setBuddyTrckrUnit('kg')}
                 activeOpacity={0.8}
               >
                 <View
                   style={[
-                    styles.radio,
-                    buddyFshunit === 'kg' && styles.radioActive,
+                    styles.buddyTrckrRadio,
+                    buddyTrckrUnit === 'kg' && styles.buddyTrckrRadioActive,
                   ]}
                 />
-                <Text style={styles.unitLabel}>Kg (Kilograms)</Text>
+                <Text style={styles.buddyTrckrUnitLabel}>Kg (Kilograms)</Text>
               </TouchableOpacity>
+
               <TouchableOpacity
                 style={[
-                  styles.unitOption,
-                  buddyFshunit === 'lb' && styles.unitOptionActive,
+                  styles.buddyTrckrUnitOption,
+                  buddyTrckrUnit === 'lb' && styles.buddyTrckrUnitOptionActive,
                 ]}
-                onPress={() => setBuddyFshunit('lb')}
+                onPress={() => setBuddyTrckrUnit('lb')}
                 activeOpacity={0.8}
               >
                 <View
                   style={[
-                    styles.radio,
-                    buddyFshunit === 'lb' && styles.radioActive,
+                    styles.buddyTrckrRadio,
+                    buddyTrckrUnit === 'lb' && styles.buddyTrckrRadioActive,
                   ]}
                 />
-                <Text style={styles.unitLabel}>Lb (Pounds)</Text>
+                <Text style={styles.buddyTrckrUnitLabel}>Lb (Pounds)</Text>
               </TouchableOpacity>
             </View>
 
             <TouchableOpacity
-              onPress={hasChanges ? buddyFshhandleSave : undefined}
+              onPress={buddyTrckrHasChanges ? buddyTrckrHandleSave : undefined}
               activeOpacity={0.8}
-              style={styles.saveButtonContainer}
-              disabled={!hasChanges}
+              style={styles.buddyTrckrSaveButtonContainer}
+              disabled={!buddyTrckrHasChanges}
             >
               <LinearGradient
-                colors={
-                  hasChanges
-                    ? ['#A2E8D5', '#FFFAD0', '#2CCCE7']
-                    : ['#A2E8D5', '#FFFAD0', '#2CCCE7']
-                }
+                colors={['#A2E8D5', '#FFFAD0', '#2CCCE7']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={[
-                  styles.saveButton,
-                  !hasChanges && styles.saveButtonDisabled,
+                  styles.buddyTrckrSaveButton,
+                  !buddyTrckrHasChanges && styles.buddyTrckrSaveButtonDisabled,
                 ]}
               >
-                {!hasChanges && (
+                {!buddyTrckrHasChanges && (
                   <Image
                     source={require('../FishermansTrackerAssets/images/edit.png')}
                   />
                 )}
                 <Text
                   style={[
-                    styles.saveButtonText,
-                    !hasChanges && styles.saveButtonTextDisabled,
+                    styles.buddyTrckrSaveButtonText,
+                    !buddyTrckrHasChanges &&
+                      styles.buddyTrckrSaveButtonTextDisabled,
                   ]}
                 >
-                  {hasChanges ? 'Save' : 'Edit'}
+                  {buddyTrckrHasChanges ? 'Save' : 'Edit'}
                 </Text>
               </LinearGradient>
             </TouchableOpacity>
           </View>
 
-          <View style={styles.settingsContainer}>
-            <View style={styles.settingsRow}>
-              <Text style={styles.settingsRowText}>Notifications</Text>
+          <View style={styles.buddyTrckrSettingsContainer}>
+            <View style={styles.buddyTrckrSettingsRow}>
+              <Text style={styles.buddyTrckrSettingsRowText}>
+                Notifications
+              </Text>
               <Switch
-                value={isEnabledNotifications}
-                onValueChange={value => buddyFshToggleNotifications(value)}
+                value={buddyTrckrIsEnabledNotifications}
+                onValueChange={buddyTrckrValue =>
+                  buddyTrckrToggleNotifications(buddyTrckrValue)
+                }
                 trackColor={{ false: '#ccc', true: '#FF9F29' }}
                 thumbColor="#fff"
               />
             </View>
+
             {Platform.OS === 'ios' && (
               <TouchableOpacity
-                style={styles.settingsRow}
-                onPress={handleShareApp}
+                style={styles.buddyTrckrSettingsRow}
+                onPress={buddyTrckrHandleShareApp}
                 activeOpacity={0.8}
               >
-                <Text style={styles.settingsRowText}>Share the App</Text>
+                <Text style={styles.buddyTrckrSettingsRowText}>
+                  Share the App
+                </Text>
                 <Image
                   source={require('../FishermansTrackerAssets/images/shareapp.png')}
                 />
               </TouchableOpacity>
             )}
+
             <TouchableOpacity
-              style={styles.settingsRow}
-              onPress={handleResetData}
+              style={styles.buddyTrckrSettingsRow}
+              onPress={buddyTrckrHandleResetData}
               activeOpacity={0.8}
             >
-              <Text style={styles.settingsRowText}>Reset All Data</Text>
+              <Text style={styles.buddyTrckrSettingsRowText}>
+                Reset All Data
+              </Text>
               <Image
                 source={require('../FishermansTrackerAssets/images/reset.png')}
               />
             </TouchableOpacity>
+
             {Platform.OS === 'ios' && (
               <TouchableOpacity
-                style={[styles.settingsRow, { justifyContent: 'center' }]}
+                style={[
+                  styles.buddyTrckrSettingsRow,
+                  { justifyContent: 'center' },
+                ]}
                 activeOpacity={0.8}
                 onPress={() =>
                   Linking.openURL(
@@ -363,7 +399,9 @@ const FishermansTrackerProfile: React.FC = () => {
                   )
                 }
               >
-                <Text style={[styles.settingsRowText]}>Terms of Use</Text>
+                <Text style={styles.buddyTrckrSettingsRowText}>
+                  Terms of Use
+                </Text>
               </TouchableOpacity>
             )}
           </View>
@@ -374,25 +412,25 @@ const FishermansTrackerProfile: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  buddyFshcontainer: {
+  buddyTrckrContainer: {
     flex: 1,
   },
-  headerContainer: {
+  buddyTrckrHeaderContainer: {
     width: '100%',
     marginBottom: 0,
   },
-  header: {
+  buddyTrckrHeader: {
     width: '100%',
     height: 156,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
   },
-  headerImg: {
+  buddyTrckrHeaderImg: {
     position: 'absolute',
     right: 20,
     bottom: -10,
   },
-  backButton: {
+  buddyTrckrBackButton: {
     position: 'absolute',
     left: 15,
     top: 50,
@@ -406,19 +444,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  backButtonText: {
+  buddyTrckrBackButtonText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#fff',
   },
-  buddyFshcScrll: {
+  buddyTrckrScroll: {
     flex: 1,
   },
-  scrollContent: {
+  buddyTrckrScrollContent: {
     paddingBottom: 40,
     alignItems: 'center',
   },
-  card: {
+  buddyTrckrCard: {
     width: '100%',
     backgroundColor: '#286E42',
     borderRadius: 30,
@@ -429,13 +467,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     marginTop: 20,
   },
-  title: {
+  buddyTrckrTitle: {
     fontSize: 24,
     fontWeight: '700',
     color: '#fff',
     marginBottom: 20,
   },
-  avatarPlaceholder: {
+  buddyTrckrAvatarPlaceholder: {
     width: 142,
     height: 142,
     borderRadius: 70,
@@ -445,11 +483,11 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     marginBottom: 16,
   },
-  avatarImage: {
+  buddyTrckrAvatarImage: {
     width: '100%',
     height: '100%',
   },
-  input: {
+  buddyTrckrInput: {
     width: '100%',
     paddingVertical: 16,
     backgroundColor: '#799930',
@@ -459,12 +497,12 @@ const styles = StyleSheet.create({
     color: '#fff',
     marginBottom: 16,
   },
-  unitRow: {
+  buddyTrckrUnitRow: {
     flexDirection: 'row',
     gap: 12,
     marginBottom: 24,
   },
-  unitOption: {
+  buddyTrckrUnitOption: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
@@ -473,27 +511,27 @@ const styles = StyleSheet.create({
     padding: 10,
     gap: 8,
   },
-  unitOptionActive: {},
-  radio: {
+  buddyTrckrUnitOptionActive: {},
+  buddyTrckrRadio: {
     width: 20,
     height: 20,
     borderRadius: 10,
     borderWidth: 2,
     borderColor: '#fff',
   },
-  radioActive: {
+  buddyTrckrRadioActive: {
     backgroundColor: '#FF9F29',
     borderColor: '#fff',
   },
-  unitLabel: {
+  buddyTrckrUnitLabel: {
     fontSize: 14,
     color: '#fff',
     fontWeight: '500',
   },
-  saveButtonContainer: {
+  buddyTrckrSaveButtonContainer: {
     width: '100%',
   },
-  saveButton: {
+  buddyTrckrSaveButton: {
     width: '100%',
     height: 51,
     borderRadius: 60,
@@ -502,18 +540,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 8,
   },
-  saveButtonText: {
+  buddyTrckrSaveButtonText: {
     fontSize: 16,
     fontWeight: '600',
     color: '#007083',
   },
-  saveButtonDisabled: {
+  buddyTrckrSaveButtonDisabled: {
     opacity: 0.9,
   },
-  saveButtonTextDisabled: {
+  buddyTrckrSaveButtonTextDisabled: {
     color: '#007083',
   },
-  settingsRow: {
+  buddyTrckrSettingsRow: {
     width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
@@ -527,12 +565,12 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     minHeight: 55,
   },
-  settingsRowText: {
+  buddyTrckrSettingsRowText: {
     fontSize: 16,
     fontWeight: '500',
     color: '#fff',
   },
-  settingsContainer: {
+  buddyTrckrSettingsContainer: {
     width: '100%',
   },
 });

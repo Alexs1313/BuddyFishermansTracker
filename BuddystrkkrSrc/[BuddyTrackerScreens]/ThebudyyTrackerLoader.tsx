@@ -62,8 +62,8 @@ const ThebudyyTrackerLoader: React.FC = () => {
       >
         {Platform.OS === 'ios' ? (
           <Image
-            source={require('../FishermansTrackerAssets/images/loaderimg.png')}
-            style={styles.buddyTrckrImage}
+            source={require('../FishermansTrackerAssets/images/buddyfsrmnloade.png')}
+            style={{ width: 96, height: 96 }}
             resizeMode="contain"
           />
         ) : (

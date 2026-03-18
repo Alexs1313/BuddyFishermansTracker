@@ -174,7 +174,7 @@ const ThebudyyTrackerProfile: React.FC = () => {
 
   const buddyTrckrHandleShareApp = () => {
     Linking.openURL(
-      'https://apps.apple.com/us/app/the-fisher-m%D0%B0n-budd%D1%83/id6760716215',
+      'https://apps.apple.com/us/app/the-fisher-man-buddy/id6760774809',
     );
   };
 

@@ -4,16 +4,16 @@ workflows:
     max_build_duration: 120
     instance_type: mac_mini_m2
     integrations:
-      app_store_connect: SterrePauwelsAPIKey
+      app_store_connect: TheBddyyAPIKey
     environment:
       ios_signing:
         distribution_type: app_store
-        bundle_identifier: com.sdksltracckr.ajksjaa
+        bundle_identifier: com.lksdf.sdlfknsaband
       vars:
-        BUNDLE_ID: com.sdksltracckr.ajksjaa
+        BUNDLE_ID: com.lksdf.sdlfknsaband
         XCODE_WORKSPACE: BuddyFishermansTracker.xcworkspace
         XCODE_SCHEME: BuddyFishermansTracker
-        APP_STORE_APPLE_ID: 6760716215
+        APP_STORE_APPLE_ID: 6760774809
     scripts:
       - name: Install npm dependencies
         script: |
@@ -25,11 +25,11 @@ workflows:
         script: |
           cd ios
           xcode-project use-profiles
-      # - name: Increment build number
-      #   script: |
-      #     cd ios
-      #     LATEST_BUILD_NUMBER=$(app-store-connect get-latest-app-store-build-number "$APP_STORE_APPLE_ID")
-      #     agvtool new-version -all $(($LATEST_BUILD_NUMBER + 1))
+      - name: Increment build number
+        script: |
+          cd ios
+          LATEST_BUILD_NUMBER=$(app-store-connect get-latest-app-store-build-number "$APP_STORE_APPLE_ID")
+          agvtool new-version -all $(($LATEST_BUILD_NUMBER + 1))
       - name: Build IPA for distribution
         script: |
           xcode-project build-ipa \

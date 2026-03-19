@@ -60,19 +60,11 @@ const ThebudyyTrackerLoader: React.FC = () => {
           { transform: [{ scale: buddyTrckrScale }] },
         ]}
       >
-        {Platform.OS === 'ios' ? (
-          <Image
-            source={require('../FishermansTrackerAssets/images/buddyfsrmnloade.png')}
-            style={{ width: 96, height: 96 }}
-            resizeMode="contain"
-          />
-        ) : (
-          <Image
-            source={require('../FishermansTrackerAssets/images/loaderimgandr.png')}
-            style={styles.buddyTrckrImage}
-            resizeMode="contain"
-          />
-        )}
+        <Image
+          source={require('../FishermansTrackerAssets/images/buddyfsrmnloade.png')}
+          style={{ width: 96, height: 96 }}
+          resizeMode="contain"
+        />
       </Animated.View>
     </ImageBackground>
   );

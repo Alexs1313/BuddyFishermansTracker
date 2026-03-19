@@ -158,7 +158,17 @@ const ThebudyyTrackerHome: React.FC = () => {
         date: 'Mar 12, 2026',
         latitude: 45.5123,
         longitude: -0.4987,
-        catches: [{ id: 'demo-catch-1', title: 'First cast — pike', species: '', weight: '', weatherConditions: '', equipment: '', imageUri: null }],
+        catches: [
+          {
+            id: 'demo-catch-1',
+            title: 'First cast — pike',
+            species: '',
+            weight: '',
+            weatherConditions: '',
+            equipment: '',
+            imageUri: null,
+          },
+        ],
       },
       {
         id: 'demo-location-2',
@@ -166,15 +176,24 @@ const ThebudyyTrackerHome: React.FC = () => {
         date: 'Mar 05, 2026',
         latitude: 45.4871,
         longitude: -0.5214,
-        catches: [{ id: 'demo-catch-2', title: 'Evening bass', species: '', weight: '', weatherConditions: '', equipment: '', imageUri: null }],
+        catches: [
+          {
+            id: 'demo-catch-2',
+            title: 'Evening bass',
+            species: '',
+            weight: '',
+            weatherConditions: '',
+            equipment: '',
+            imageUri: null,
+          },
+        ],
       },
     ],
     [],
   );
 
-  const buddyTrckrRecentLocations = (buddyTrckrShowDemo
-    ? buddyTrckrDemoLocations
-    : buddyTrckrLocations
+  const buddyTrckrRecentLocations = (
+    buddyTrckrShowDemo ? buddyTrckrDemoLocations : buddyTrckrLocations
   ).slice(0, 2);
 
   const buddyTrckrSavedRecipes: RecipeItem[] = buddyTrckrSavedRecipeIds
@@ -480,7 +499,7 @@ const styles = StyleSheet.create({
   },
   buddyTrckrHeaderFsh: {
     width: '100%',
-    height: 156,
+    height: 155,
     borderBottomLeftRadius: 30,
     borderBottomRightRadius: 30,
   },
